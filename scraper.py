@@ -2,13 +2,11 @@
  ("http://www.persianacademy.ir/fa/word/") and create a database of all the
  words found there.
 
-The database will be stored as `farhangestan.db` while scrapping and will be
- renamed to `farhangestan.sqlite3` after it's ready.
+The database will be stored as `farhangestan.sqlite3`.
 """
 
 import sqlite3
 import re
-import os
 
 import requests
 from bs4 import BeautifulSoup
@@ -25,8 +23,9 @@ def extract_data(soup, daftar):
     return rows
 
 
-def create_sqlite_file(conn):
-    """Create the database file."""
+def create_sqlite_file():
+    """Create the database file. Return connection object."""
+    conn = sqlite3.connect('farhangestan.sqlite3')
     conn.execute('''CREATE TABLE words (
         mosavab TEXT,
         biganeh TEXT,
@@ -35,6 +34,7 @@ def create_sqlite_file(conn):
         daftar INTEGER
     )'''
     )
+    return conn
 
 
 def insert(rows, conn):
@@ -54,69 +54,78 @@ def insert(rows, conn):
             rows
         )
 
-        
-headers = {
-    'Host': 'www.persianacademy.ir',
-    'User-Agent': 'Mozilla/5.0 ('
-    'Windows NT 6.3; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.7,fa;q=0.3',
-    'Accept-Encoding': 'gzip, deflate',
-    'DNT': 1,
-    'Referer': 'http://www.persianacademy.ir/fa/word/',
-    'Connection': 'keep-alive',
-}
-
-conn = sqlite3.connect('farhangestan.db')
-url = 'http://www.persianacademy.ir/fa/word/'
-session = requests.Session()
-
-for daftar in range(1, 12):
-    page = 1
-    print(daftar, page)
-    soup = BeautifulSoup(session.get(url, headers=headers).content)
-    
-    data = {
-        '__VIEWSTATE': soup.find(id="__VIEWSTATE")['value'],
-        '__EVENTVALIDATION': soup.find(id="__EVENTVALIDATION")['value'],
-        'ctl00$MainSection$hidAll': '',
-        'ctl00$MainSection$hidWhichButton': '',
-        'ctl00$MainSection$txtFaWord': '',
-        'ctl00$MainSection$txtVersion': daftar,
-        'ctl00$MainSection$txtRegion': '',
-        'ctl00$MainSection$txtEnWord': '',
-        'ctl00$MainSection$txtDesc': '',
-        'ctl00$MainSection$btnSearch': 'جست‌و‌جو',
+if __name__ == '__main__':
+    headers = {
+        'Host': 'www.persianacademy.ir',
+        'User-Agent': 'Mozilla/5.0 ('
+        'Windows NT 6.3; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q='
+        '0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.7,fa;q=0.3',
+        'Accept-Encoding': 'gzip, deflate',
+        'DNT': 1,
+        'Referer': 'http://www.persianacademy.ir/fa/word/',
+        'Connection': 'keep-alive',
     }
 
-    soup = BeautifulSoup(session.post(url, data, headers=headers).content)
-    rows = extract_data(soup, daftar)
-    insert(rows, conn)
-    
-    
-    del data['ctl00$MainSection$btnSearch']
-    while True:
-        page += 1
-        print(daftar, page)
-        data['__EVENTARGUMENT'] = ''
-        pagelink = soup.find(colspan=4).find(text=page)
-        if pagelink:    
-            data['__EVENTTARGET'] = re.search(
-                r"\(\'(.*?)\'", str(pagelink.parent)
-            ).group(1)
-        elif soup.find(colspan=4).text.endswith('...'):
-            data['__EVENTTARGET'] = re.search(
-                r"\(\'(.*?)\'", str(soup.find(colspan=4)('a')[-1])
-            ).group(1)
-        else:
-            break
-        data['__EVENTVALIDATION'] = soup.find(id="__EVENTVALIDATION")['value']
-        data['__VIEWSTATE'] = soup.find(id="__VIEWSTATE")['value']
-        soup = BeautifulSoup(session.post(url, data, headers=headers).content)
-        rows = extract_data(soup, daftar)
-        insert(rows, conn)
+    conn = create_sqlite_file()
+    url = 'http://www.persianacademy.ir/fa/word/'
+    session = requests.Session()
 
-    
-conn.close()
-os.rename('farhangestan.db', 'farhangestan.sqlite3')
-print('`farhangestan.sqlite3` is ready.')
+    daftar = 0
+    while True:
+        daftar += 1
+        page = 1
+        print(daftar, page)
+        soup = BeautifulSoup(session.get(url, headers=headers).content)
+        
+        data = {
+            '__VIEWSTATE': soup.find(id="__VIEWSTATE")['value'],
+            '__EVENTVALIDATION': soup.find(id="__EVENTVALIDATION")['value'],
+            'ctl00$MainSection$hidAll': '',
+            'ctl00$MainSection$hidWhichButton': '',
+            'ctl00$MainSection$txtFaWord': '',
+            'ctl00$MainSection$txtVersion': daftar,
+            'ctl00$MainSection$txtRegion': '',
+            'ctl00$MainSection$txtEnWord': '',
+            'ctl00$MainSection$txtDesc': '',
+            'ctl00$MainSection$btnSearch': 'جست‌و‌جو',
+        }
+
+        soup = BeautifulSoup(session.post(url, data, headers=headers).content)
+        try:
+            rows = extract_data(soup, daftar)
+        except TypeError:
+            # This `daftar` has no words (is not released yet)
+            break
+        insert(rows, conn)
+        
+        
+        del data['ctl00$MainSection$btnSearch']
+        while True:
+            page += 1
+            print(daftar, page)
+            data['__EVENTARGUMENT'] = ''
+            pagelink = soup.find(colspan=4).find(text=page)
+            if pagelink:    
+                data['__EVENTTARGET'] = re.search(
+                    r"\(\'(.*?)\'", str(pagelink.parent)
+                ).group(1)
+            elif soup.find(colspan=4).text.endswith('...'):
+                data['__EVENTTARGET'] = re.search(
+                    r"\(\'(.*?)\'", str(soup.find(colspan=4)('a')[-1])
+                ).group(1)
+            else:
+                break
+            data['__EVENTVALIDATION'] = soup.find(
+                id="__EVENTVALIDATION"
+            )['value']
+            data['__VIEWSTATE'] = soup.find(id="__VIEWSTATE")['value']
+            soup = BeautifulSoup(
+                session.post(url, data, headers=headers).content
+            )
+            rows = extract_data(soup, daftar)
+            insert(rows, conn)
+
+    conn.close()
+    print('`farhangestan.sqlite3` is ready.')
