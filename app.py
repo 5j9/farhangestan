@@ -5,9 +5,9 @@
 
 import sqlite3
 from os import name as os_name
+
 if os_name == 'posix':
     from flup.server.fcgi import WSGIServer
-
 from flask import Flask
 from flask import g
 from flask import request
@@ -21,8 +21,8 @@ app = Flask(__name__)
 def searchform():
     return redirect(url_for('static', filename='searchform.html'))
 
-
-@app.route('/farhangestan/results')
+    
+@app.route('/results' if os_name == 'posix' else '/farhangestan/results')
 def searchresult():
     args = request.args
     daftar = args.get('daftar', '')
