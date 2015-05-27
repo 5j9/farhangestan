@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+
+"""A web application that allows searching the farhangestan.sqlite3 database.
+"""
+
 import sqlite3
 
 from flask import Flask
