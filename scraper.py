@@ -54,6 +54,18 @@ def insert(rows, conn):
             rows
         )
 
+
+def replace_in_table(conn, old, new):
+    for col in ('mosavab', 'biganeh', 'hozeh', 'tarif', 'daftar'):
+        sql = """
+        UPDATE words
+        SET {col} = replace({col}, '{old}', '{new}')
+        WHERE {col} LIKE '%{old}%';
+        """.format(old=old, new=new, col=col)
+        conn.execute(sql)
+        conn.commit()
+
+        
 if __name__ == '__main__':
     headers = {
         'Host': 'www.persianacademy.ir',
@@ -127,5 +139,9 @@ if __name__ == '__main__':
             rows = extract_data(soup, daftar)
             insert(rows, conn)
 
+    
+
+    replace_in_table(conn, 'ۀ', 'هٔ')
+    replace_in_table(conn, r'\u200F', r'\u200C')
     conn.close()
     print('`farhangestan.sqlite3` is ready.')
