@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """This module can be used to scrap the persianacademy website
  ("http://www.persianacademy.ir/fa/word/") and create a database of all the
  words found there.
