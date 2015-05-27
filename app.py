@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
+#!/data/project/farhangestan/ve/bin/python
 
 """A web application that allows searching the farhangestan.sqlite3 database.
 """
 
 import sqlite3
+from os import name as os_name
+if os_name == 'posix':
+    from flup.server.fcgi import WSGIServer
 
 from flask import Flask
 from flask import g
@@ -85,4 +88,7 @@ def query_db(query, args):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    if os_name == 'posix':
+        WSGIServer(app).run()
+    else:
+        app.run(debug=True)
