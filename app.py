@@ -22,7 +22,7 @@ def searchform():
     return redirect(url_for('static', filename='searchform.html'))
 
 
-@app.route('/results')
+@app.route('/farhangestan/results')
 def searchresult():
     args = request.args
     daftar = args.get('daftar', '')
