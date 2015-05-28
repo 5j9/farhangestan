@@ -50,13 +50,16 @@ $(function(){
       function(){ 
         tds = $(this).find('td')
         c = '<ref>{{یادکرد فرهنگستان | مصوب=';
-        c += tds[0].textContent;
-        c += ' |بیگانه=';
-        c += tds[1].textContent;
-        c += ' |حوزه=';
+        c += tds[0].textContent.replace(/( )?\d+$/g, function($0, $1){ return $1 ? $0 : ''; });
+        c += ' | بیگانه=';
+        c += tds[1].textContent.replace(/(\s+\d(?=, | \()|\s+\d+$)/g, '');
+        c += ' | حوزه=';
         c += tds[2].textContent.replace(/[\[\]]/g, '');
-        c += ' |دفتر=';
+        c += ' | دفتر=';
         c += daftar(tds[4].textContent);
+        c += ' | بخش=فارسی'
+        c += ' | سرواژه=';
+        c += tds[0].textContent;
         c += ' }}</ref>';
         copy_citation(c); 
       }
