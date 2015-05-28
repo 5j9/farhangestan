@@ -21,40 +21,63 @@ app = Flask(__name__)
 def searchform():
     return redirect(url_for('static', filename='searchform.html'))
 
+
+def standard_fa_chars(text):
+    """Replace all simi-Persian charactars to Persian charactars.
+
+    Some of the substitions are copied from:
+    fa.wikipedia: Mediawiki:Gadget-Extra-Editbuttons-persiantools.js
+    """
+    text = (
+        text.
+        replace('ك', 'ک').
+        replace('ڪ', 'ک').
+        replace('ﻙ', 'ک').
+        replace('ﻚ', 'ک').
+        replace('ي', 'ی').
+        replace('ى', 'ی').
+        replace('ے', 'ی').
+        replace('ۍ', 'ی').
+        replace('ې', 'ی').
+        replace('ہ', 'ه').
+        replace('ە', 'ه\u200c').
+        replace('ھ', 'ه')
+    )
+    return text
+
     
 @app.route('/results' if os_name == 'posix' else '/farhangestan/results')
 def searchresult():
     args = request.args
     daftar = args.get('daftar', '')
     query = (
-        "SELECT * FROM words WHERE "
+        "SELECT mosavab, biganeh, hozeh, tarif, daftar FROM words WHERE "
         "(mosavab LIKE ? OR "
         "biganeh LIKE ? OR "
-        "tarif LIKE ?)"
+        "tarif LIKE ? OR "
+        "pure_mosavab LIKE ?)"
         " AND "
         "(mosavab LIKE ? OR "
-        "biganeh LIKE ? OR "
-        "tarif LIKE ?)"
+        "biganeh LIKE ?)"
         " AND "
         "(mosavab LIKE ? OR "
-        "biganeh LIKE ? OR "
-        "tarif LIKE ?)"
+        "biganeh LIKE ?)"
         " AND "
         "hozeh LIKE ?"
         " AND "
         "daftar LIKE ?"
         " LIMIT 100;"
     )
-    word = args.get('word', '')
-    wordstart = args.get('wordstart', '')
-    wordend = args.get('wordend', '')
-    hozeh = args.get('hozeh', '')
+    word = standard_fa_chars(args.get('word', ''))
+    wordstart = standard_fa_chars(args.get('wordstart', ''))
+    wordend = standard_fa_chars(args.get('wordend', ''))
+    hozeh = standard_fa_chars(args.get('hozeh', ''))
     daftar = int(daftar) if daftar.isnumeric() else ''
     
     rows = query_db(
         query,
-        ('%{}%'.format(word),)* 3 + ('{}%'.format(wordstart),)* 3 +
-        ('%{}'.format(wordend),)* 3 + ('%{}%'.format(hozeh),) +
+        ('%{}%'.format(word),)* 4 + ('{}%'.format(wordstart),)* 2 +
+        ('%{}'.format(wordend),)* 2 + ('%{}%'.format(hozeh),) +
         ('%{}%'.format(daftar),),
     )
     
