@@ -67,6 +67,39 @@ def replace_in_table(conn, old, new):
         conn.execute(sql)
         conn.commit()
 
+def add_pure_mosavab_column(conn):
+    """Create a new column named `pure_mosavab` that has no diacritics.
+
+    Note: This may take a while!
+    """
+    try:
+        sql = "ALTER TABLE words ADD COLUMN pure_mosavab TEXT;"
+        conn.execute(sql)
+        conn.commit()
+    except sqlite3.OperationalError:
+        # duplicate column name: pure_mosavab
+        pass
+    diacritics = "\u0651\u064E\u0650\u064F\u064B\u064D\u064C\u0652"
+    sql = (
+        """
+        SELECT mosavab
+        FROM words
+        WHERE mosavab LIKE '%""" + """%'
+         OR mosavab LIKE '%""".join(diacritics) +
+        "%';"
+    )
+    cur = conn.execute(sql)
+    for row in cur.fetchall():
+        mosavab = row[0]
+        pure_mosavab = mosavab
+        for d in diacritics:
+            pure_mosavab = pure_mosavab.replace(d, '')
+        conn.execute(
+            "update or replace words set pure_mosavab = ? where mosavab = ?",
+            (pure_mosavab, mosavab),
+        )
+    conn.commit()
+
         
 if __name__ == '__main__':
     headers = {
@@ -145,5 +178,6 @@ if __name__ == '__main__':
 
     replace_in_table(conn, 'ۀ', 'هٔ')
     replace_in_table(conn, r'\u200F', r'\u200C')
+    add_pure_mosavab_column(conn)
     conn.close()
     print('`farhangestan.sqlite3` is ready.')
