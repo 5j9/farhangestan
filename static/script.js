@@ -50,9 +50,14 @@ $(function(){
       function(){ 
         tds = $(this).find('td')
         c = '<ref>{{یادکرد فرهنگستان | مصوب=';
-        c += tds[0].textContent.replace(/( )?\d+$/g, function($0, $1){ return $1 ? $0 : ''; });
+        mosavab = tds[0].textContent.replace(/( )?\d$/g, function($0, $1){ return $1 ? $0 : ''; });
+        c += mosavab;
         c += ' | بیگانه=';
-        c += tds[1].textContent.replace(/(\s+\d(?=, | \()|\s+\d+$)/g, '');
+        biganeh = tds[1].textContent;
+        if (!/\d$/g.test(mosavab)) {
+            biganeh = biganeh.replace(/(\s+\d(?=, | \(| ?\/ )|$)/g, '');
+        }
+        c += biganeh;
         c += ' | حوزه=';
         c += tds[2].textContent.replace(/[\[\]]/g, '');
         c += ' | دفتر=';
