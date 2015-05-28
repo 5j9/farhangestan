@@ -50,12 +50,15 @@ $(function(){
       function(){ 
         tds = $(this).find('td')
         c = '<ref>{{یادکرد فرهنگستان | مصوب=';
-        mosavab = tds[0].textContent.replace(/( )?\d$/g, function($0, $1){ return $1 ? $0 : ''; });
+        mosavab = tds[0].textContent
+        if (!/\d\d$/g.test(mosavab) && !/ \d$/g.test(mosavab)) {
+            mosavab = mosavab.replace(/\d$/g, '');
+        }
         c += mosavab;
         c += ' | بیگانه=';
         biganeh = tds[1].textContent;
         if (!/\d$/g.test(mosavab)) {
-            biganeh = biganeh.replace(/(\s+\d(?=, | \(| ?\/ )|$)/g, '');
+            biganeh = biganeh.replace(/ \d(?=, | \(| ?\/ |$)/g, '');
         }
         c += biganeh;
         c += ' | حوزه=';
