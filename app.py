@@ -66,21 +66,20 @@ def searchresult():
         "hozeh LIKE ?"
         " AND "
         "daftar LIKE ?"
-        " LIMIT 100;"
+        " LIMIT 50 OFFSET ?;"
     )
     word = standard_fa_chars(args.get('word', ''))
     wordstart = standard_fa_chars(args.get('wordstart', ''))
     wordend = standard_fa_chars(args.get('wordend', ''))
     hozeh = standard_fa_chars(args.get('hozeh', ''))
     daftar = int(daftar) if daftar.isnumeric() else ''
-    
+    offset = int(args.get('offset', 0))
     rows = query_db(
         query,
         ('%{}%'.format(word),)* 4 + ('{}%'.format(wordstart),)* 2 +
         ('%{}'.format(wordend),)* 2 + ('%{}%'.format(hozeh),) +
-        ('%{}%'.format(daftar),),
+        ('%{}%'.format(daftar),) + (offset,),
     )
-    
     return render_template('results.html', rows=rows)
 
 
