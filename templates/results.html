@@ -107,7 +107,8 @@
         {%- endfor %}
     </table>
     {% if rows | length == 50 %}
-    <a href="{{ request.full_path | replace("&offset=" ~ request.args.get('offset'), "") }}&offset={{ request.args.get('offset', 0) | int + 50 }}" id="nextpage">صفحهٔ بعدی</a>
+    {# request.url? see https://flask.readthedocs.org/en/latest/api/#flask.Request.url_root #}
+    <a href="{{ request.url | replace("&offset=" ~ request.args.get('offset'), "") }}&offset={{ request.args.get('offset', 0) | int + 50 }}" id="nextpage">صفحهٔ بعدی</a>
     {% endif %}
     <ul>
         <li>کد منبع این ابزار را می‌توانید <a href="https://github.com/5j9/farhangestan">در گیت‌هاب ببینید.</a></li>
