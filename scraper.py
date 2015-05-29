@@ -177,7 +177,7 @@ if __name__ == '__main__':
     
 
     replace_in_table(conn, 'ۀ', 'هٔ')
-    replace_in_table(conn, r'\u200F', r'\u200C')
+    replace_in_table(conn, '\u200F', '\u200C')
     add_pure_mosavab_column(conn)
     conn.close()
     print('`farhangestan.sqlite3` is ready.')
