@@ -68,8 +68,9 @@ $(function(){
       function(){ 
         tds = $(this).find('td')
         c = '<ref>{{یادکرد فرهنگستان | مصوب=';
-        mosavab = nonum_mosavab(tds[0].textContent)
-        tarif = tds[3].textContent
+        mosavab = nonum_mosavab(tds[0].textContent);
+        c += mosavab;
+        tarif = tds[3].textContent;
         if (tarif.indexOf('متـ . ') !== -1) {
             //tarif has at list one synonym
             postmot = tarif.split('متـ . ')[1];
@@ -81,11 +82,11 @@ $(function(){
             }
             if (!/\w{2,}/i.test(postmot)) {
                 //postmot only contains farsi synonym
-                c += mosavab + '، ' + nonum_motaradef(postmot);
+                //append to mosavab
+                c += '، ' + nonum_motaradef(postmot);
             }
             else {
                 //postmot contains latin and farsi synonyms
-                c += mosavab;
                 c += ' | مصوب مترادف=';
                 // may contain newline. see واکنشگاه هسته‌ای
                 motparts = postmot.split('\n');
