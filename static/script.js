@@ -124,11 +124,13 @@ $(function(){
                         c += ', ' + nonum_biganeh(biganeh_motaradef);
                     }                    
                 }
+                c += ' | بیگانه در فارسی مترادف=';
             }
         }
-        c += ' | بیگانه=';
+        c += ' | بیگانه= ';
         biganeh = nonum_biganeh(tds[1].textContent);
         c += biganeh;
+        c += ' |بیگانه در فارسی=';
         c += ' | حوزه=';
         c += tds[2].textContent.replace(/[\[\]]/g, '');
         c += ' | دفتر=';
