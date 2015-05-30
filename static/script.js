@@ -66,7 +66,7 @@ function nonum_biganeh(biganeh) {
 $(function(){
     $("tr").slice(1).dblclick(
       function(){ 
-        tds = $(this).find('td')
+        tds = $(this).find('td');
         c = '<ref>{{یادکرد فرهنگستان | مصوب=';
         mosavab = nonum_mosavab(tds[0].textContent);
         c += mosavab;
@@ -92,8 +92,8 @@ $(function(){
                 motparts = postmot.split('\n');
                 firsttime = true;
                 for (i=0; i < motparts.length; i++) {
-                    part = motparts[i].trim()
-                    if (!part) continue
+                    part = motparts[i].trim();
+                    if (!part) continue;
                     // [\u0600-\u06FF] is the Arabic (Unicode block)
                     // https://en.wikipedia.org/wiki/Arabic_%28Unicode_block%29
                     mosavab_motaradef = /[\u0600-\u06FF \u200c]+/.exec(part);
