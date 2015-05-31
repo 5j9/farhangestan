@@ -120,6 +120,12 @@ td:nth-child(2) {
 p {
     width: 90%;
 }
+
+tr {
+    white-space:pre-wrap;
+    word-wrap:break-word;
+}
+
 #nextpage {
     padding: 10%;
 }
