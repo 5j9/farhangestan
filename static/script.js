@@ -73,6 +73,15 @@ function nonum_biganeh(biganeh) {
     return biganeh.replace(/ \d(?=, | \(| ?\/ |$)/g, '');
 }
 
+function append_biganeh(c, tds) {
+    "use strict";
+    c += ' | بیگانه=';
+    var biganeh = nonum_biganeh(tds[1].textContent);
+    c += biganeh;
+    c += ' | بیگانه در فارسی=';
+    return c;
+}
+
 $(function () {
     "use strict";
     $("tr").slice(1).dblclick(
@@ -89,58 +98,64 @@ $(function () {
                     // the star indicates some kind of comment.
                     // e.g. واژه * مصوب فرهنگستان اول
                     // also see سرگذشت خود
-                    postmot = nonum_motaradef(postmot.split('*')[0].trim());
+                    postmot = postmot.split('*')[0].trim();
                 }
-                if (!/\w{2,}/i.test(postmot)) {
-                    //postmot only contains farsi synonym
+                // may contain newline. see واکنشگاه هسته‌ای
+                var motlines = postmot.split('\n');
+                var line = motlines[0];
+                var start_line;
+                if (!/\w{2,}/.test(line)) {
+                    //line 0 only contains farsi synonym
                     //append to mosavab
-                    c += '، ' + nonum_motaradef(postmot);
+                    c += '، ' + nonum_motaradef(line);
+                    start_line = 1;
+                    c = append_biganeh(c, tds);
                 } else {
-                    //postmot contains latin and farsi synonyms
-                    c += ' | مصوب مترادف=';
-                    // may contain newline. see واکنشگاه هسته‌ای
-                    var motparts = postmot.split('\n');
-                    var firsttime = true;
-                  	var part;
-                    for (var i = 0; i < motparts.length; i++) {
-                        part = motparts[i].trim();
-                        if (!part) continue;
-                        // [\u0600-\u06FF] is the Arabic (Unicode block)
-                        // https://en.wikipedia.org/wiki/Arabic_%28Unicode_block%29
-                        var mosavab_motaradef = /[\u0600-\u06FF \u200c]+/.exec(part);
-                        if (!mosavab_motaradef) continue;
-                        mosavab_motaradef = mosavab_motaradef[0].trim();
-                        if (!mosavab_motaradef) continue;
-                        if (firsttime) {
-                            c += nonum_mosavab(mosavab_motaradef);
-                            firsttime = false;
-                        } else {
-                            c += '، ' + nonum_mosavab(mosavab_motaradef);
-                        }
-                    }
-                    c += ' | بیگانهٔ مترادف=';
-                    firsttime = true;
-                    for (i = 0; i < motparts.length; i++) {
-                        part = motparts[i].trim();
-                        if (!part) continue;
-                        var biganeh_motaradef = /\w{2,}[ \w-]*(?=$|[\u0600-\u06FF\u200c])/.exec(part);
-                        if (!biganeh_motaradef) continue;
-                        biganeh_motaradef = biganeh_motaradef[0].trim();
-                        if (!biganeh_motaradef) continue;
-                        if (firsttime) {
-                            c += nonum_biganeh(biganeh_motaradef);
-                            firsttime = false;
-                        } else {
-                            c += ', ' + nonum_biganeh(biganeh_motaradef);
-                        }
-                    }
-                    c += ' | بیگانه در فارسی مترادف=';
+                    //line 0 contains latin and farsi synonyms
+                    //process it with other lines
+                    start_line = 0;
+                    c = append_biganeh(c, tds);
                 }
+                var firsttime = true;
+                for (var i=start_line; i < motlines.length; i++) {
+                    line = motlines[i].trim();
+                    line = nonum_motaradef(line);
+                    if (!line) continue;
+                    // [\u0600-\u06FF] is the Arabic (Unicode block)
+                    // https://en.wikipedia.org/wiki/Arabic_%28Unicode_block%29
+                    var mosavab_motaradef = /[\u0600-\u06FF \u200c]+/.exec(line);
+                    if (!mosavab_motaradef) continue;
+                    mosavab_motaradef = mosavab_motaradef[0].trim();
+                    if (!mosavab_motaradef) continue;
+                    if (firsttime) {
+                        c += ' | مصوب مترادف=';
+                        c += nonum_mosavab(mosavab_motaradef);
+                        firsttime = false;
+                    } else {
+                        c += '، ' + nonum_mosavab(mosavab_motaradef);
+                    }
+                }
+                firsttime = true;
+                for (i=start_line; i < motlines.length; i++) {
+                    line = motlines[i].trim();
+                    if (!line) continue;
+                    var biganeh_motaradef = /\w{2,}[ \w-]*(?=$|[\u0600-\u06FF\u200c])/.exec(line);
+                    if (!biganeh_motaradef) continue;
+                    biganeh_motaradef = biganeh_motaradef[0].trim();
+                    if (!biganeh_motaradef) continue;
+                    if (firsttime) {
+                        c += ' | بیگانهٔ مترادف=';
+                        c += nonum_biganeh(biganeh_motaradef);
+                        firsttime = false;
+                    } else {
+                        c += ', ' + nonum_biganeh(biganeh_motaradef);
+                    }
+                }
+                if (!firsttime) c += ' | بیگانه در فارسی مترادف=';
             }
-            c += ' | بیگانه=';
-            var biganeh = nonum_biganeh(tds[1].textContent);
-            c += biganeh;
-            c += ' | بیگانه در فارسی=';
+            else {
+                c = append_biganeh(c, tds);
+            }
             c += ' | حوزه=';
             c += tds[2].textContent.replace(/[\[\]]/g, '');
             c += ' | دفتر=';
@@ -148,7 +163,7 @@ $(function () {
             c += ' | بخش=فارسی';
             c += ' | سرواژه=';
             c += tds[0].textContent;
-            c += ' }}</ref>';
+            c += '}}</ref>';
             copy_citation(c);
         }
     );
