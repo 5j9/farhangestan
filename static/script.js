@@ -73,13 +73,75 @@ function nonum_biganeh(biganeh) {
     return biganeh.replace(/ \d(?=, | \(| ?\/ |$)/g, '');
 }
 
-function append_biganeh(c, tds) {
+function citation2string(citation) {
+    // get citation object and return citation string
     "use strict";
-    c += ' | بیگانه=';
-    var biganeh = nonum_biganeh(tds[1].textContent);
-    c += biganeh;
-    c += ' | بیگانه در فارسی=';
-    return c;
+    var string = '<ref>{{یادکرد فرهنگستان';
+    string += ' | مصوب=' + citation.mosavab;
+    string += ' | بیگانه=' + citation.biganeh;
+    if (citation.biganeh) {
+        string += ' | بیگانه در فارسی=';
+    }
+    if (citation.mosavab_motaradef) {
+        string += ' | مصوب مترادف=' + citation.mosavab_motaradef;
+    }
+    if (citation.biganeh_motaradef) {
+        string += ' | بیگانهٔ مترادف=' + citation.biganeh_motaradef;
+    }
+    if (citation.biganeh_motaradef) {
+        string += ' | بیگانه در فارسی مترادف=';
+    }
+    string += ' | حوزه=' + citation.hozeh;
+    string += ' | دفتر=' + citation.daftar;
+    string += ' | بخش=فارسی';
+    string += ' | سرواژه=' + citation.sarvazheh;
+    string += '}}</ref>';
+    return  string;
+}
+
+function mosavab_motaradef(lines, start_line) {
+    "use strict";
+    var firsttime = true;
+    var line, mm;
+    for (var i=start_line; i < lines.length; i++) {
+        line = lines[i].trim();
+        line = nonum_motaradef(line);
+        if (!line) continue;
+        // [\u0600-\u06FF] is the Arabic (Unicode block)
+        // https://en.wikipedia.org/wiki/Arabic_%28Unicode_block%29
+        mm = /[\u0600-\u06FF \u200c]+([\w] )?/.exec(line);
+        if (!mm) continue;
+        mm = mm[0].trim();
+        if (!mm) continue;
+        if (firsttime) {
+            mm = nonum_mosavab(mm);
+            firsttime = false;
+        } else {
+            mm += '، ' + nonum_mosavab(mm);
+        }
+    }
+    return mm;
+}
+
+function biganeh_motaradef(lines, start_line) {
+    "use strict";
+    var firsttime = true;
+    var line, bm;
+    for (var i=start_line; i < lines.length; i++) {
+        line = lines[i].trim();
+        if (!line) continue;
+        bm = /\w[ \w-]{2,}(?=$|[\u0600-\u06FF\u200c])/g.exec(line);
+        if (!bm) continue;
+        bm = bm[0].trim();
+        if (!bm) continue;
+        if (firsttime) {
+            bm = nonum_biganeh(bm);
+            firsttime = false;
+        } else {
+            bm += ', ' + nonum_biganeh(bm);
+        }
+    }
+    return bm;
 }
 
 $(function () {
@@ -87,9 +149,9 @@ $(function () {
     $("tr").slice(1).dblclick(
         function () {
             var tds = $(this).find('td');
-            var c = '<ref>{{یادکرد فرهنگستان | مصوب=';
-            var mosavab = nonum_mosavab(tds[0].textContent);
-            c += mosavab;
+            var citation = {};
+            citation.mosavab = nonum_mosavab(tds[0].textContent);
+            citation.biganeh = nonum_biganeh(tds[1].textContent);
             var tarif = tds[3].textContent;
             if (tarif.indexOf('متـ . ') !== -1) {
                 //tarif has at list one synonym
@@ -101,70 +163,26 @@ $(function () {
                     postmot = postmot.split('*')[0].trim();
                 }
                 // may contain newline. see واکنشگاه هسته‌ای
-                var motlines = postmot.split('\n');
-                var line = motlines[0];
+                var lines = postmot.split('\n');
+                var line = lines[0];
                 var start_line;
                 if (!/\w{2,}/.test(line)) {
                     //line 0 only contains farsi synonym
                     //append to mosavab
-                    c += '، ' + nonum_motaradef(line);
+                    citation.mosavab += '، ' + nonum_motaradef(line);
                     start_line = 1;
-                    c = append_biganeh(c, tds);
                 } else {
                     //line 0 contains latin and farsi synonyms
                     //process it with other lines
                     start_line = 0;
-                    c = append_biganeh(c, tds);
                 }
-                var firsttime = true;
-                for (var i=start_line; i < motlines.length; i++) {
-                    line = motlines[i].trim();
-                    line = nonum_motaradef(line);
-                    if (!line) continue;
-                    // [\u0600-\u06FF] is the Arabic (Unicode block)
-                    // https://en.wikipedia.org/wiki/Arabic_%28Unicode_block%29
-                    var mosavab_motaradef = /[\u0600-\u06FF \u200c]+/.exec(line);
-                    if (!mosavab_motaradef) continue;
-                    mosavab_motaradef = mosavab_motaradef[0].trim();
-                    if (!mosavab_motaradef) continue;
-                    if (firsttime) {
-                        c += ' | مصوب مترادف=';
-                        c += nonum_mosavab(mosavab_motaradef);
-                        firsttime = false;
-                    } else {
-                        c += '، ' + nonum_mosavab(mosavab_motaradef);
-                    }
-                }
-                firsttime = true;
-                for (i=start_line; i < motlines.length; i++) {
-                    line = motlines[i].trim();
-                    if (!line) continue;
-                    var biganeh_motaradef = /\w{2,}[ \w-]*(?=$|[\u0600-\u06FF\u200c])/.exec(line);
-                    if (!biganeh_motaradef) continue;
-                    biganeh_motaradef = biganeh_motaradef[0].trim();
-                    if (!biganeh_motaradef) continue;
-                    if (firsttime) {
-                        c += ' | بیگانهٔ مترادف=';
-                        c += nonum_biganeh(biganeh_motaradef);
-                        firsttime = false;
-                    } else {
-                        c += ', ' + nonum_biganeh(biganeh_motaradef);
-                    }
-                }
-                if (!firsttime) c += ' | بیگانه در فارسی مترادف=';
+                citation.mosavab_motaradef = mosavab_motaradef(lines, start_line);
+                citation.biganeh_motaradef = biganeh_motaradef(lines, start_line);
             }
-            else {
-                c = append_biganeh(c, tds);
-            }
-            c += ' | حوزه=';
-            c += tds[2].textContent.replace(/[\[\]]/g, '');
-            c += ' | دفتر=';
-            c += daftar(tds[4].textContent);
-            c += ' | بخش=فارسی';
-            c += ' | سرواژه=';
-            c += tds[0].textContent;
-            c += '}}</ref>';
-            copy_citation(c);
+            citation.hozeh = tds[2].textContent.replace(/[\[\]]/g, '');
+            citation.daftar = daftar(tds[4].textContent);
+            citation.sarvazheh = tds[0].textContent;
+            copy_citation(citation2string(citation));
         }
     );
     $('ul').prepend('<li>برای به دست آوردن <a href="https://fa.wikipedia.org/wiki/%D8%A7%D9%84%DA%AF%D9%88:%DB%8C%D8%A7%D8%AF%DA%A9%D8%B1%D8%AF-%D9%81%D8%B1%D9%87%D9%86%DA%AF%D8%B3%D8%AA%D8%A7%D9%86">یادکرد فرهنگستان</a> جهت استفاده در ویکی‌پدیا کافیست روی ردیفی که می‌خواهید یادکرد آن ساخته شود <a href="https://fa.wikipedia.org/wiki/%D8%AF%D8%A7%D8%A8%D9%84-%DA%A9%D9%84%DB%8C%DA%A9">دوبار-کلیک</a> کنید.</li>');
