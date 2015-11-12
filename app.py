@@ -23,7 +23,7 @@ def searchform():
 
 
 def standard_fa_chars(text):
-    """Replace all simi-Persian charactars to Persian charactars.
+    """Replace all semi-Persian charactars to Persian charactars.
 
     Some of the substitions are copied from:
     fa.wikipedia: Mediawiki:Gadget-Extra-Editbuttons-persiantools.js
