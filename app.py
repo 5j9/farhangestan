@@ -45,7 +45,15 @@ def standard_fa_chars(text):
     )
     return text
 
-    
+
+def num2fa(num):
+    """Return the given number with Persian characters."""
+    fa = ''
+    for char in str(num):
+        fa += chr(ord(char) + 1728)
+    return fa
+
+
 @app.route('/results' if os_name == 'posix' else '/farhangestan/results')
 def searchresult():
     args = request.args
