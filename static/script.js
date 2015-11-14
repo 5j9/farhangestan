@@ -180,7 +180,6 @@ function parse(tds) {
     var citation = {};
     citation.mosavab = nonum_mosavab(tds[0].textContent);
     citation.biganeh = nonum_biganeh(tds[1].textContent);
-    debugger;
     citation = parse_tarif(tds[3].textContent, citation);
     citation.hozeh = tds[2].textContent.replace(/[\[\]]/g, '');
     citation.daftar = daftar(tds[4].textContent);
@@ -190,11 +189,11 @@ function parse(tds) {
 
 $(function () {
     "use strict";
-    $("tr").slice(1).dblclick(
+    $('tr:nth-child(n+2)>td:nth-child(5)').click(
         function () {
-            var tds = $(this).find('td');
+            var tds = $(this).parent().find('td');
             copy_citation(parse(tds));
         }
     );
-    $('ul').prepend('<li>برای به دست آوردن <a href="https://fa.wikipedia.org/wiki/%D8%A7%D9%84%DA%AF%D9%88:%DB%8C%D8%A7%D8%AF%DA%A9%D8%B1%D8%AF-%D9%81%D8%B1%D9%87%D9%86%DA%AF%D8%B3%D8%AA%D8%A7%D9%86">یادکرد فرهنگستان</a> جهت استفاده در ویکی‌پدیا کافیست روی ردیفی که می‌خواهید یادکرد آن ساخته شود <a href="https://fa.wikipedia.org/wiki/%D8%AF%D8%A7%D8%A8%D9%84-%DA%A9%D9%84%DB%8C%DA%A9">دوبار-کلیک</a> کنید.</li>');
+    $('ul').prepend('<li>برای به دست آوردن <a href="https://fa.wikipedia.org/wiki/%D8%A7%D9%84%DA%AF%D9%88:%DB%8C%D8%A7%D8%AF%DA%A9%D8%B1%D8%AF-%D9%81%D8%B1%D9%87%D9%86%DA%AF%D8%B3%D8%AA%D8%A7%D9%86">یادکرد فرهنگستان</a>، برای استفاده در ویکی‌پدیای فارسی، کافی است روی شمارهٔ دفتر در ردیفی که می‌خواهید یادکرد آن ساخته شود کلیک کنید.</li>');
 });
