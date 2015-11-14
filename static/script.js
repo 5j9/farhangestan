@@ -70,7 +70,7 @@ function nonum_motaradef(motaradef) {
 
 function nonum_biganeh(biganeh) {
     "use strict";
-    return biganeh.replace(/ \d(?=, | \(| ?\/ |$)/g, '');
+    return biganeh.replace(/^\d /, '').replace(/( \d)+(?=, | \(| ?\/ |$)/g, '');
 }
 
 function citation2string(citation) {
@@ -109,15 +109,15 @@ function mosavab_motaradef(lines, start_line) {
         if (!line) continue;
         // [\u0600-\u06FF] is the Arabic (Unicode block)
         // https://en.wikipedia.org/wiki/Arabic_%28Unicode_block%29
-        mm = /[\u0600-\u06FF \u200c]+([\w] )?/.exec(line);
-        if (!mm) continue;
-        mm = mm[0].trim();
-        if (!mm) continue;
+        line = /[\u0600-\u06FF \u200c]+([\w] )?/.exec(line);
+        if (!line) continue;
+        line = line[0].trim();
+        if (!line) continue;
         if (firsttime) {
-            mm = nonum_mosavab(mm);
+            mm = nonum_motaradef(line);
             firsttime = false;
         } else {
-            mm += '، ' + nonum_mosavab(mm);
+            mm += '، ' + nonum_motaradef(line);
         }
     }
     return mm;
@@ -130,18 +130,62 @@ function biganeh_motaradef(lines, start_line) {
     for (var i=start_line; i < lines.length; i++) {
         line = lines[i].trim();
         if (!line) continue;
-        bm = /\w[ \w-]{2,}(?=$|[\u0600-\u06FF\u200c])/g.exec(line);
-        if (!bm) continue;
-        bm = bm[0].trim();
-        if (!bm) continue;
+        line = /\w[ \w-,]{2,}(?=$|[\u0600-\u06FF\u200c])/g.exec(line);
+        if (!line) continue;
+        line = line[0].trim();
+        if (!line) continue;
         if (firsttime) {
-            bm = nonum_biganeh(bm);
+            bm = nonum_biganeh(line);
             firsttime = false;
         } else {
-            bm += ', ' + nonum_biganeh(bm);
+            bm += ', ' + nonum_biganeh(line);
         }
     }
     return bm;
+}
+
+function parse_tarif(tarif, citation) {
+    "use strict";
+    if (tarif.indexOf('متـ . ') !== -1) {
+        //tarif has at list one synonym
+        var postmot = tarif.split('متـ . ')[1];
+        if (postmot.indexOf('*') !== -1) {
+            // the star indicates some kind of comment.
+            // e.g. واژه * مصوب فرهنگستان اول
+            // also see سرگذشت خود
+            postmot = postmot.split('*')[0].trim();
+        }
+        // may contain newline. see واکنشگاه هسته‌ای
+        var lines = postmot.split('\n');
+        var line = lines[0];
+        var start_line;
+        if (!/\w{2,}/.test(line)) {
+            //line 0 only contains farsi synonym
+            //append to mosavab
+            citation.mosavab += '، ' + nonum_motaradef(line);
+            start_line = 1;
+        } else {
+            //line 0 contains latin and farsi synonyms
+            //process it with other lines
+            start_line = 0;
+        }
+        citation.mosavab_motaradef = mosavab_motaradef(lines, start_line);
+        citation.biganeh_motaradef = biganeh_motaradef(lines, start_line);
+    }
+    return citation;
+}
+
+function parse(tds) {
+    "use strict";
+    var citation = {};
+    citation.mosavab = nonum_mosavab(tds[0].textContent);
+    citation.biganeh = nonum_biganeh(tds[1].textContent);
+    debugger;
+    citation = parse_tarif(tds[3].textContent, citation);
+    citation.hozeh = tds[2].textContent.replace(/[\[\]]/g, '');
+    citation.daftar = daftar(tds[4].textContent);
+    citation.sarvazheh = tds[0].textContent;
+    return citation2string(citation);
 }
 
 $(function () {
@@ -149,40 +193,7 @@ $(function () {
     $("tr").slice(1).dblclick(
         function () {
             var tds = $(this).find('td');
-            var citation = {};
-            citation.mosavab = nonum_mosavab(tds[0].textContent);
-            citation.biganeh = nonum_biganeh(tds[1].textContent);
-            var tarif = tds[3].textContent;
-            if (tarif.indexOf('متـ . ') !== -1) {
-                //tarif has at list one synonym
-                var postmot = tarif.split('متـ . ')[1];
-                if (postmot.indexOf('*') !== -1) {
-                    // the star indicates some kind of comment.
-                    // e.g. واژه * مصوب فرهنگستان اول
-                    // also see سرگذشت خود
-                    postmot = postmot.split('*')[0].trim();
-                }
-                // may contain newline. see واکنشگاه هسته‌ای
-                var lines = postmot.split('\n');
-                var line = lines[0];
-                var start_line;
-                if (!/\w{2,}/.test(line)) {
-                    //line 0 only contains farsi synonym
-                    //append to mosavab
-                    citation.mosavab += '، ' + nonum_motaradef(line);
-                    start_line = 1;
-                } else {
-                    //line 0 contains latin and farsi synonyms
-                    //process it with other lines
-                    start_line = 0;
-                }
-                citation.mosavab_motaradef = mosavab_motaradef(lines, start_line);
-                citation.biganeh_motaradef = biganeh_motaradef(lines, start_line);
-            }
-            citation.hozeh = tds[2].textContent.replace(/[\[\]]/g, '');
-            citation.daftar = daftar(tds[4].textContent);
-            citation.sarvazheh = tds[0].textContent;
-            copy_citation(citation2string(citation));
+            copy_citation(parse(tds));
         }
     );
     $('ul').prepend('<li>برای به دست آوردن <a href="https://fa.wikipedia.org/wiki/%D8%A7%D9%84%DA%AF%D9%88:%DB%8C%D8%A7%D8%AF%DA%A9%D8%B1%D8%AF-%D9%81%D8%B1%D9%87%D9%86%DA%AF%D8%B3%D8%AA%D8%A7%D9%86">یادکرد فرهنگستان</a> جهت استفاده در ویکی‌پدیا کافیست روی ردیفی که می‌خواهید یادکرد آن ساخته شود <a href="https://fa.wikipedia.org/wiki/%D8%AF%D8%A7%D8%A8%D9%84-%DA%A9%D9%84%DB%8C%DA%A9">دوبار-کلیک</a> کنید.</li>');
