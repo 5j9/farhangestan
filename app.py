@@ -1,4 +1,4 @@
-#!/data/project/farhangestan/ve/bin/python
+#!/data/project/farhangestan/www/python/venv/bin/python
 
 """A web application that allows searching the farhangestan.sqlite3 database.
 """
