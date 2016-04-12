@@ -178,12 +178,12 @@ function parse_tarif(tarif, citation) {
 function parse(tds) {
     "use strict";
     var citation = {};
-    citation.mosavab = nonum_mosavab(tds[0].textContent);
-    citation.biganeh = nonum_biganeh(tds[1].textContent);
-    citation = parse_tarif(tds[3].textContent, citation);
-    citation.hozeh = tds[2].textContent.replace(/[\[\]]/g, '');
-    citation.daftar = daftar(tds[4].textContent);
-    citation.sarvazheh = tds[0].textContent;
+    citation.mosavab = nonum_mosavab(tds[0].textContent.trim());
+    citation.biganeh = nonum_biganeh(tds[1].textContent.trim());
+    citation = parse_tarif(tds[3].textContent.trim(), citation);
+    citation.hozeh = tds[2].textContent.replace(/[\[\]]/g, '').trim();
+    citation.daftar = daftar(tds[4].textContent.trim());
+    citation.sarvazheh = tds[0].textContent.trim();
     return citation2string(citation);
 }
 
