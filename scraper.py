@@ -15,29 +15,66 @@ import requests
 from bs4 import BeautifulSoup
 
 
+DIACRITICS_TT = str.maketrans(
+    '', '', '\u0651\u064E\u0650\u064F\u064B\u064D\u064C\u0652'
+)
+GENERAL_TT = str.maketrans('\u200F', '\u200C')
+
+
+def cleanup_tds(tds):
+    """Replace some of the known bad characters with better equivalants."""
+    for i, d in enumerate(tds):
+        tds[i] = (
+            d.text.
+                replace('ۀ', 'هٔ').
+                replace('\u064B\u064B', '\u064B').
+                translate(GENERAL_TT)
+        )
+    return tds
+
+
 def extract_data(soup, daftar):
     """Extract data in soup and write it into the connection."""
     rows = []
-    table = soup.find(id="MainSection_dgData")
+    table = soup.find(id='MainSection_dgData')
     for tr in table('tr')[1:]:
         tds = tr('td')
         if len(tds) == 4:
-            rows.append([td.text for td in tds] + [daftar])
+            tds = cleanup_tds(tds)
+            mosavab = tds[0]
+            pure_mosavab = mosavab.translate(DIACRITICS_TT)
+            if pure_mosavab == mosavab:
+                rows.append([td for td in tds] + [daftar, None])
+            else:
+                rows.append([td for td in tds] + [daftar, pure_mosavab])
     return rows
 
 
+def max_dafter(conn):
+    """Return the maximum value of daftar in the existing table."""
+    return conn.execute('SELECT max(daftar) FROM words;').fetchone()[0]
+
+
 def create_sqlite_file():
-    """Create the database file. Return connection object."""
+    """Create/coonect to the database file. Return the connection object."""
     conn = sqlite3.connect('farhangestan.sqlite3')
-    conn.execute('''CREATE TABLE words (
-        mosavab TEXT,
-        biganeh TEXT,
-        hozeh TEXT,
-        tarif TEXT,
-        daftar INTEGER
-    )'''
-    )
-    return conn
+    try:
+        conn.execute(
+            '''
+            CREATE TABLE words (
+            mosavab TEXT,
+            biganeh TEXT,
+            hozeh TEXT,
+            tarif TEXT,
+            daftar INTEGER,
+            pure_mosavab TEXT
+            )
+            '''
+        )
+    except sqlite3.OperationalError:
+        # table words already exists
+        pass
+    return conn, max_dafter(conn)
 
 
 def insert(rows, conn):
@@ -50,15 +87,21 @@ def insert(rows, conn):
                 biganeh,
                 hozeh,
                 tarif,
-                daftar
+                daftar,
+                pure_mosavab
                 )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
             rows
         )
 
 
-def replace_in_table(conn, old, new):
+def replace_in_table(conn, old: str, new: str):
+    """Replace old with new in columns of the table.
+
+    Only done on ('mosavab', 'biganeh', 'hozeh', 'tarif', 'daftar') fields.
+
+    """
     for col in ('mosavab', 'biganeh', 'hozeh', 'tarif', 'daftar'):
         sql = """
         UPDATE words
@@ -68,40 +111,7 @@ def replace_in_table(conn, old, new):
         conn.execute(sql)
         conn.commit()
 
-def add_pure_mosavab_column(conn):
-    """Create a new column named `pure_mosavab` that has no diacritics.
 
-    Note: This may take a while!
-    """
-    try:
-        sql = "ALTER TABLE words ADD COLUMN pure_mosavab TEXT;"
-        conn.execute(sql)
-        conn.commit()
-    except sqlite3.OperationalError:
-        # duplicate column name: pure_mosavab
-        pass
-    diacritics = "\u0651\u064E\u0650\u064F\u064B\u064D\u064C\u0652"
-    sql = (
-        """
-        SELECT mosavab
-        FROM words
-        WHERE mosavab LIKE '%""" + """%'
-         OR mosavab LIKE '%""".join(diacritics) +
-        "%';"
-    )
-    cur = conn.execute(sql)
-    for row in cur.fetchall():
-        mosavab = row[0]
-        pure_mosavab = mosavab
-        for d in diacritics:
-            pure_mosavab = pure_mosavab.replace(d, '')
-        conn.execute(
-            "update or replace words set pure_mosavab = ? where mosavab = ?",
-            (pure_mosavab, mosavab),
-        )
-    conn.commit()
-
-        
 if __name__ == '__main__':
     headers = {
         'Host': 'www.persianacademy.ir',
@@ -111,21 +121,24 @@ if __name__ == '__main__':
         '0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.7,fa;q=0.3',
         'Accept-Encoding': 'gzip, deflate',
-        'DNT': 1,
+        'DNT': '1',
         'Referer': 'http://www.persianacademy.ir/fa/word/',
         'Connection': 'keep-alive',
     }
 
-    conn = create_sqlite_file()
+    conn, daftar = create_sqlite_file()
+
     url = 'http://www.persianacademy.ir/fa/word/'
     session = requests.Session()
 
-    daftar = 0
     while True:
         daftar += 1
         page = 1
-        print(daftar, page)
-        soup = BeautifulSoup(session.get(url, headers=headers).content)
+        print('Book:', daftar, 'Page:', page)
+        soup = BeautifulSoup(
+            session.get(url, headers=headers).text,
+            "html5lib",
+        )
         
         data = {
             '__VIEWSTATE': soup.find(id="__VIEWSTATE")['value'],
@@ -140,18 +153,21 @@ if __name__ == '__main__':
             'ctl00$MainSection$btnSearch': 'جست‌و‌جو',
         }
 
-        soup = BeautifulSoup(session.post(url, data, headers=headers).content)
+        soup = BeautifulSoup(
+            session.post(url, data, headers=headers).text,
+            "html5lib",
+        )
         try:
             rows = extract_data(soup, daftar)
         except TypeError:
-            # This `daftar` has no words (is not released yet)
+            print('Book {} has no words.'.format(daftar))
             break
         insert(rows, conn)
 
         del data['ctl00$MainSection$btnSearch']
         while True:
             page += 1
-            print(daftar, page)
+            print('Book:', daftar, 'Page:', page)
             data['__EVENTARGUMENT'] = ''
             pagelink = soup.find(colspan=4).find(text=page)
             if pagelink:    
@@ -169,14 +185,11 @@ if __name__ == '__main__':
             )['value']
             data['__VIEWSTATE'] = soup.find(id="__VIEWSTATE")['value']
             soup = BeautifulSoup(
-                session.post(url, data, headers=headers).content
+                session.post(url, data, headers=headers).text,
+                "html5lib",
             )
             rows = extract_data(soup, daftar)
             insert(rows, conn)
 
-    replace_in_table(conn, 'ۀ', 'هٔ')
-    replace_in_table(conn, '\u200F', '\u200C')
-    replace_in_table(conn, '\u064B\u064B', '\u064B')
-    add_pure_mosavab_column(conn)
     conn.close()
-    print('`farhangestan.sqlite3` is ready.')
+    print('farhangestan.sqlite3 is ready!')
