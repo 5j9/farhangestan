@@ -16,6 +16,7 @@ from flask import render_template
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def searchform():
     return redirect(url_for('static', filename='searchform.html'))
@@ -76,11 +77,11 @@ def searchresult():
     offset = int(args.get('offset', 0))
     rows = query_db(
         query,
-        ('%{}%'.format(word),)* 4 + ('{}%'.format(wordstart),)* 2 +
-        ('%{}'.format(wordend),)* 2 + ('%{}%'.format(hozeh),) +
+        ('%{}%'.format(word),) * 4 + ('{}%'.format(wordstart),) * 2 +
+        ('%{}'.format(wordend),) * 2 + ('%{}%'.format(hozeh),) +
         ('%{}%'.format(daftar),) + (offset,),
     )
-    return render_template('results.html', rows=rows)
+    return render_template('results.html', **locals())
 
 
 def connect_to_db():

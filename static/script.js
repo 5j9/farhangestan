@@ -189,6 +189,11 @@ function parse(tds) {
 
 $(function () {
     "use strict";
+    $('#clear').click(function (e) {
+        e.preventDefault();
+        $('#word, #wordstart, #wordend, #hozeh').val('');
+        $('#daftar').val('همهٔ دفترها');
+    });
     $('tr:nth-child(n+2)>td:nth-child(5)').click(
         function () {
             var tds = $(this).parent().find('td');

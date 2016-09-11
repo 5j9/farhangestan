@@ -1,104 +1,63 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <title>
-      جستجوی واژه‌های مصوب فرهنگستان زبان و ادب فارسی
-    </title>
-  </head>
-  <body>
-    <form class="form-horizontal" action="/farhangestan/results">
-      <fieldset>
-        <!-- Form Name -->
-        <legend>جستجوی واژه‌های مصوب فرهنگستان زبان و ادب
-        فارسی</legend> <!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="word">واژه یا بخشی از
-          واژه</label>
-          <div class="controls">
-            <input id="word" name="word" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="wordstart">جزء آغازی
-          واژه</label>
-          <div class="controls">
-            <input id="wordstart" name="wordstart" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="wordend">جزء پایانی
-          واژه</label>
-          <div class="controls">
-            <input id="wordend" name="wordend" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="hozeh">حوزه</label>
-          <div class="controls">
-            <input id="hozeh" name="hozeh" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Select Basic -->
-        <div class="control-group">
-          <label class="control-label" for="daftar">دفتر</label>
-          <div class="controls">
-            <select id="daftar" name="daftar" class="input-large">
-              <option>
-                همهٔ دفترها
-              </option>
-              <option>
-                ۱
-              </option>
-              <option>
-                ۲
-              </option>
-              <option>
-                ۳
-              </option>
-              <option>
-                ۴
-              </option>
-              <option>
-                ۵
-              </option>
-              <option>
-                ۶
-              </option>
-              <option>
-                ۷
-              </option>
-              <option>
-                ۸
-              </option>
-              <option>
-                ۹
-              </option>
-              <option>
-                ۱۰
-              </option>
-              <option>
-                ۱۱
-              </option>
-              <option>
-                ۱۲
-              </option>
-              <option>
-                ۱۳
-              </option>
-            </select>
-          </div>
-        </div><input type="submit" value="جست‌وجو" />
-      </fieldset>
-    </form>
-    <ul>
-        <li>کد منبع این ابزار را می‌توانید <a href="https://github.com/5j9/farhangestan">در گیت‌هاب ببینید.</a></li>
-        <li>هرگونه پیشنهاد، انتقاد، مشکل، تشکر :) و... را می‌توانید در <a href="https://fa.wikipedia.org/wiki/%D8%A8%D8%AD%D8%AB_%DA%A9%D8%A7%D8%B1%D8%A8%D8%B1:Dalba">صفحهٔ بحثم</a> با من در میان بگذارید.</li>
-    </ul>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="script.js"></script>
-  </body>
+<html xmlns="http://www.w3.org/1999/xhtml" dir="rtl">
+    <head>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+        <title>جستجوی واژه‌های مصوب فرهنگستان زبان و ادب فارسی</title>
+    </head>
+    <body>
+        <form class="form-horizontal" action="/farhangestan/results">
+            <fieldset>
+                <legend>جستجوی واژه‌های مصوب فرهنگستان زبان و ادب فارسی</legend>
+                <label class="control-label" for="word">واژه یا بخشی از واژه</label>
+                <br>
+                <input id="word" name="word" class="input-large search-query" type="text" />
+                <br>
+                <label class="control-label" for="wordstart">جزء آغازی واژه</label>
+                <br>
+                <input id="wordstart" name="wordstart" class="input-large search-query" type="text" />
+                <br>
+                <label class="control-label" for="wordend">جزء پایانی واژه</label>
+                <br>
+                <input id="wordend" name="wordend" class="input-large search-query" type="text" />
+                <br>
+                <label class="control-label" for="hozeh">حوزه</label>
+                <br>
+                <input id="hozeh" name="hozeh" class="input-large search-query" type="text" />
+                <br>
+                <label class="control-label" for="daftar">دفتر</label>
+                <br>
+                <select id="daftar" name="daftar" class="input-large">
+                    <option>همهٔ دفترها</option>
+                    <option>۱</option>
+                    <option>۲</option>
+                    <option>۳</option>
+                    <option>۴</option>
+                    <option>۵</option>
+                    <option>۶</option>
+                    <option>۷</option>
+                    <option>۸</option>
+                    <option>۹</option>
+                    <option>۱۰</option>
+                    <option>۱۱</option>
+                    <option>۱۲</option>
+                    <option>۱۳</option>
+                </select>
+                <br>
+                <input type="submit" value="جست‌وجو" />
+            </fieldset>
+        </form>
+        <ul>
+            <li>
+                کد منبع این ابزار را می‌توانید
+                <a href="https://github.com/5j9/farhangestan">در گیت‌هاب ببینید.</a>
+            </li>
+            <li>
+                هرگونه پیشنهاد، انتقاد، مشکل، تشکر :) و... را می‌توانید در
+                <a href="https://fa.wikipedia.org/wiki/%D8%A8%D8%AD%D8%AB_%DA%A9%D8%A7%D8%B1%D8%A8%D8%B1:Dalba">صفحهٔ بحثم</a>
+                با من در میان بگذارید.
+            </li>
+        </ul>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="script.js"></script>
+    </body>
 </html>

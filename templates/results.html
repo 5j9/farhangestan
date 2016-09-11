@@ -1,127 +1,89 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
-    <title>
-      جستجوی واژه‌های مصوب فرهنگستان زبان و ادب فارسی
-    </title>
-  </head>
-  <body>
-    <form class="form-horizontal" action="/farhangestan/results">
-      <fieldset>
-        <!-- Form Name -->
-        <legend>جستجوی واژه‌های مصوب فرهنگستان زبان و ادب
-        فارسی</legend> <!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="word">واژه یا بخشی از
-          واژه</label>
-          <div class="controls">
-            <input id="word" name="word" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="wordstart">جزء آغازی
-          واژه</label>
-          <div class="controls">
-            <input id="wordstart" name="wordstart" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="wordend">جزء پایانی
-          واژه</label>
-          <div class="controls">
-            <input id="wordend" name="wordend" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Search input-->
-        <div class="control-group">
-          <label class="control-label" for="hozeh">حوزه</label>
-          <div class="controls">
-            <input id="hozeh" name="hozeh" class=
-            "input-large search-query" type="text" />
-          </div>
-        </div><!-- Select Basic -->
-        <div class="control-group">
-          <label class="control-label" for="daftar">دفتر</label>
-          <div class="controls">
-            <select id="daftar" name="daftar" class="input-large">
-              <option>
-                همهٔ دفترها
-              </option>
-              <option>
-                ۱
-              </option>
-              <option>
-                ۲
-              </option>
-              <option>
-                ۳
-              </option>
-              <option>
-                ۴
-              </option>
-              <option>
-                ۵
-              </option>
-              <option>
-                ۶
-              </option>
-              <option>
-                ۷
-              </option>
-              <option>
-                ۸
-              </option>
-              <option>
-                ۹
-              </option>
-              <option>
-                ۱۰
-              </option>
-              <option>
-                ۱۱
-              </option>
-              <option>
-                ۱۲
-              </option>
-              <option>
-                ۱۳
-              </option>
-            </select>
-          </div>
-        </div><input type="submit" value="جست‌وجو" />
-      </fieldset>
-    </form>
-    <br>
-    <table>
-        <caption>یافته‌ها</caption>
-          <tr>
-            <td>مصوب</td>
-            <td>بیگانه</td>
-            <td>حوزه</td>
-            <td>تعریف</td>
-            <td>شمارهٔ دفتر</td>
-          </tr>
-        {%- for row in rows %}
-          <tr>
-          {%- for column in row %}
-            <td>{{ column }}</td>
-          {%- endfor %}
-          </tr>
-        {%- endfor %}
-    </table>
-    {% if rows | length == 50 %}
-    {# request.url? see https://flask.readthedocs.org/en/latest/api/#flask.Request.url_root #}
-    <a href="{{ request.url | replace("&offset=" ~ request.args.get('offset'), "") }}&offset={{ request.args.get('offset', 0) | int + 50 }}" id="nextpage">صفحهٔ بعدی</a>
-    {% endif %}
-    <ul>
-        <noscript><li>از آنجایی که مرورگر شما از جاوااسکریپت پشتیبانی نمی‌کند امکان ساخت خودکار یادکردها وجود ندارد.</li></noscript> 
-        <li>کد منبع این ابزار را می‌توانید <a href="https://github.com/5j9/farhangestan">در گیت‌هاب ببینید.</a></li>
-        <li>هرگونه پیشنهاد، انتقاد، مشکل، تشکر :) و... را می‌توانید در <a href="https://fa.wikipedia.org/wiki/%D8%A8%D8%AD%D8%AB_%DA%A9%D8%A7%D8%B1%D8%A8%D8%B1:Dalba">صفحهٔ بحثم</a> با من در میان بگذارید.</li>
-    </ul>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-  </body>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fa" dir="rtl">
+    <head>
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" />
+        <title>جستجوی واژه‌های مصوب فرهنگستان زبان و ادب فارسی</title>
+    </head>
+    <body>
+        <form class="form-horizontal" action="/farhangestan/results">
+            <fieldset>
+                <legend>جستجوی واژه‌های مصوب فرهنگستان زبان و ادب فارسی</legend>
+                <label class="control-label" for="word">واژه یا بخشی از واژه:</label>
+                <br>
+                <input id="word" name="word" class="input-large search-query" type="text" value="{{word}}" />
+                <br>
+                <label class="control-label" for="wordstart">جزء آغازی واژه:</label>
+                <br>
+                <input id="wordstart" name="wordstart" class="input-large search-query" type="text" value="{{wordstart}}" />
+                <br>
+                <label class="control-label" for="wordend">جزء پایانی واژه:</label>
+                <br>
+                <input id="wordend" name="wordend" class="input-large search-query" type="text" value="{{wordend}}" />
+                <br>
+                <label class="control-label" for="hozeh">حوزه:</label>
+                <br>
+                <input id="hozeh" name="hozeh" class="input-large search-query" type="text" value="{{hozeh}}" />
+                <br>
+                <label class="control-label" for="daftar">دفتر:</label>
+                <br>
+                <select id="daftar" name="daftar" class="input-large">
+                    <option {{ 'selected' if daftar == 2 else ''}}>همهٔ دفترها</option>
+                    <option {{ 'selected' if daftar == 1 else ''}}>۱</option>
+                    <option {{ 'selected' if daftar == 2 else ''}}>۲</option>
+                    <option {{ 'selected' if daftar == 3 else ''}}>۳</option>
+                    <option {{ 'selected' if daftar == 4 else ''}}>۴</option>
+                    <option {{ 'selected' if daftar == 5 else ''}}>۵</option>
+                    <option {{ 'selected' if daftar == 6 else ''}}>۶</option>
+                    <option {{ 'selected' if daftar == 7 else ''}}>۷</option>
+                    <option {{ 'selected' if daftar == 8 else ''}}>۸</option>
+                    <option {{ 'selected' if daftar == 9 else ''}}>۹</option>
+                    <option {{ 'selected' if daftar == 10 else ''}}>۱۰</option>
+                    <option {{ 'selected' if daftar == 11 else ''}}>۱۱</option>
+                    <option {{ 'selected' if daftar == 12 else ''}}>۱۲</option>
+                    <option {{ 'selected' if daftar == 13 else ''}}>۱۳</option>
+                </select>
+                <br>
+                <input type="submit" value="جست‌وجو" id="search" />
+                <a id="clear" href="/static/searchform.html">پاک‌کردن</a>
+            </fieldset>
+        </form>
+        <br>
+        <table>
+            <caption>یافته‌ها</caption>
+            <tr>
+                <td>مصوب</td>
+                <td>بیگانه</td>
+                <td>حوزه</td>
+                <td>تعریف</td>
+                <td>شمارهٔ دفتر</td>
+            </tr>
+            {%- for row in rows %}
+              <tr>
+              {%- for column in row %}
+                <td>{{ column }}</td>
+              {%- endfor %}
+              </tr>
+            {%- endfor %}
+        </table>
+        {% if rows | length == 50 %}
+            {# request.url? see https://flask.readthedocs.org/en/latest/api/#flask.Request.url_root #}
+            <a href="{{ request.url | replace("&offset=" ~ request.args.get('offset'), "") }}&offset={{ request.args.get('offset', 0) | int + 50 }}" id="nextpage">صفحهٔ بعدی</a>
+        {% endif %}
+        <ul>
+            <noscript>
+                <li>از آنجایی که مرورگر شما از جاوااسکریپت پشتیبانی نمی‌کند امکان ساخت خودکار یادکردها وجود ندارد.</li>
+            </noscript>
+            <li>
+                کد منبع این ابزار را می‌توانید
+                <a href="https://github.com/5j9/farhangestan">در گیت‌هاب ببینید.</a>
+            </li>
+            <li>
+                هرگونه پیشنهاد، انتقاد، مشکل، تشکر :) و... را می‌توانید در
+                <a href="https://fa.wikipedia.org/wiki/%D8%A8%D8%AD%D8%AB_%DA%A9%D8%A7%D8%B1%D8%A8%D8%B1:Dalba">صفحهٔ بحثم</a>
+                با من در میان بگذارید.
+            </li>
+        </ul>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </body>
 </html>
