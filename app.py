@@ -1,7 +1,6 @@
 #!/data/project/farhangestan/www/python/venv/bin/python
 
-"""A web application that allows searching the farhangestan.sqlite3 database.
-"""
+"""Provide a web interface to search farhangestan.sqlite3 database."""
 
 import sqlite3
 from os import name as os_name
@@ -22,11 +21,12 @@ def searchform():
     return redirect(url_for('static', filename='searchform.html'))
 
 
-def standard_fa_chars(text):
-    """Replace all semi-Persian charactars to Persian charactars.
+def input_cleanup(text):
+    """Replace all semi-Persian characters with standard Persian characters.
 
-    Some of the substitions are copied from:
+    Some of the substations are copied from:
     fa.wikipedia: Mediawiki:Gadget-Extra-Editbuttons-persiantools.js
+
     """
     text = (
         text.
@@ -68,10 +68,10 @@ def searchresult():
         "daftar LIKE ?"
         " LIMIT 50 OFFSET ?;"
     )
-    word = standard_fa_chars(args.get('word', ''))
-    wordstart = standard_fa_chars(args.get('wordstart', ''))
-    wordend = standard_fa_chars(args.get('wordend', ''))
-    hozeh = standard_fa_chars(args.get('hozeh', ''))
+    word = input_cleanup(args.get('word', ''))
+    wordstart = input_cleanup(args.get('wordstart', ''))
+    wordend = input_cleanup(args.get('wordend', ''))
+    hozeh = input_cleanup(args.get('hozeh', ''))
     daftar = int(daftar) if daftar.isnumeric() else ''
     offset = int(args.get('offset', 0))
     rows = query_db(
