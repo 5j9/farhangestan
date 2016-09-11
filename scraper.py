@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-"""This module can be used to scrap the persianacademy website
- ("http://www.persianacademy.ir/fa/word/") and create a database of all the
- words found there.
+"""Scrap the Persian Academy website to create a local sqlite3 database.
 
-The database will be stored as `farhangestan.sqlite3`.
+Web address: "http://www.persianacademy.ir/fa/word/".
+Save the sqllite3 database as `farhangestan.sqlite3`.
+
 """
+
 
 import sqlite3
 import re
@@ -146,8 +147,7 @@ if __name__ == '__main__':
             # This `daftar` has no words (is not released yet)
             break
         insert(rows, conn)
-        
-        
+
         del data['ctl00$MainSection$btnSearch']
         while True:
             page += 1
@@ -173,8 +173,6 @@ if __name__ == '__main__':
             )
             rows = extract_data(soup, daftar)
             insert(rows, conn)
-
-    
 
     replace_in_table(conn, 'ۀ', 'هٔ')
     replace_in_table(conn, '\u200F', '\u200C')
