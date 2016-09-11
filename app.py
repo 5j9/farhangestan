@@ -81,7 +81,10 @@ def searchresult():
         ('%{}'.format(wordend),) * 2 + ('%{}%'.format(hozeh),) +
         ('%{}%'.format(daftar),) + (offset,),
     )
-    return render_template('results.html', **locals())
+    return render_template(
+        'results.html', os_name=os_name, word=word, wordend=wordend,
+        wordstart=wordstart, hozeh=hozeh, daftar=daftar, rows=rows,
+    )
 
 
 def connect_to_db():
