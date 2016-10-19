@@ -28,7 +28,8 @@ def cleanup_tds(tds):
             d.text.
             replace('ۀ', 'هٔ').
             replace('\u064B\u064B', '\u064B').
-            translate(GENERAL_TT)
+            translate(GENERAL_TT).
+            strip()
         )
     return tds
 
@@ -55,7 +56,7 @@ def max_dafter(conn):
     return conn.execute('SELECT max(daftar) FROM words;').fetchone()[0]
 
 
-def create_sqlite_file():
+def get_conn():
     """Create/connect to the database file. Return the connection object."""
     conn = sqlite3.connect('farhangestan.sqlite3')
     try:
@@ -74,7 +75,7 @@ def create_sqlite_file():
     except sqlite3.OperationalError:
         # table words already exists
         pass
-    return conn, max_dafter(conn)
+    return conn
 
 
 def insert(rows, conn):
@@ -96,6 +97,17 @@ def insert(rows, conn):
         )
 
 
+def trim_table_values(chars: str):
+    conn = get_conn()
+    for col in ('mosavab', 'biganeh', 'hozeh', 'tarif', 'daftar'):
+        sql = """
+        UPDATE words
+        SET {col} = trim({col}, '{chars}');
+        """.format(col=col, chars=chars)
+        conn.execute(sql)
+        conn.commit()
+
+
 def replace_in_table(conn, old: str, new: str):
     """Replace old with new in columns of the table.
 
@@ -112,13 +124,16 @@ def replace_in_table(conn, old: str, new: str):
         conn.commit()
 
 
-if __name__ == '__main__':
+def scrap_and_store():
     headers = {
         'Host': 'www.persianacademy.ir',
-        'User-Agent': 'Mozilla/5.0 ('
-        'Windows NT 6.3; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q='
-        '0.9,*/*;q=0.8',
+        'User-Agent': (
+            'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:38.0) '
+            'Gecko/20100101 Firefox/38.0'
+        ),
+        'Accept': (
+            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        ),
         'Accept-Language': 'en-US,en;q=0.7,fa;q=0.3',
         'Accept-Encoding': 'gzip, deflate',
         'DNT': '1',
@@ -126,7 +141,8 @@ if __name__ == '__main__':
         'Connection': 'keep-alive',
     }
 
-    conn, daftar = create_sqlite_file()
+    conn = get_conn()
+    daftar = max_dafter(conn)
 
     url = 'http://www.persianacademy.ir/fa/word/'
     session = requests.Session()
@@ -139,7 +155,7 @@ if __name__ == '__main__':
             session.get(url, headers=headers).text,
             "html5lib",
         )
-        
+
         data = {
             '__VIEWSTATE': soup.find(id="__VIEWSTATE")['value'],
             '__EVENTVALIDATION': soup.find(id="__EVENTVALIDATION")['value'],
@@ -170,7 +186,7 @@ if __name__ == '__main__':
             print('Book:', daftar, 'Page:', page)
             data['__EVENTARGUMENT'] = ''
             pagelink = soup.find(colspan=4).find(text=page)
-            if pagelink:    
+            if pagelink:
                 data['__EVENTTARGET'] = re.search(
                     r"\(\'(.*?)\'", str(pagelink.parent)
                 ).group(1)
@@ -193,3 +209,8 @@ if __name__ == '__main__':
 
     conn.close()
     print('farhangestan.sqlite3 is ready!')
+
+
+if __name__ == '__main__':
+    # scrap_and_store()
+    trim_table_values(' ')
