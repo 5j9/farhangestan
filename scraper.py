@@ -56,7 +56,7 @@ def max_dafter(conn):
 
 
 def create_sqlite_file():
-    """Create/coonect to the database file. Return the connection object."""
+    """Create/connect to the database file. Return the connection object."""
     conn = sqlite3.connect('farhangestan.sqlite3')
     try:
         conn.execute(
