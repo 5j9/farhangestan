@@ -22,13 +22,13 @@ GENERAL_TT = str.maketrans('\u200F', '\u200C')
 
 
 def cleanup_tds(tds):
-    """Replace some of the known bad characters with better equivalants."""
+    """Replace some of the known bad characters with better equivalents."""
     for i, d in enumerate(tds):
         tds[i] = (
             d.text.
-                replace('ۀ', 'هٔ').
-                replace('\u064B\u064B', '\u064B').
-                translate(GENERAL_TT)
+            replace('ۀ', 'هٔ').
+            replace('\u064B\u064B', '\u064B').
+            translate(GENERAL_TT)
         )
     return tds
 
