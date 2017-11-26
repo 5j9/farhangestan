@@ -3,7 +3,6 @@
 """Provide a web interface to search farhangestan.sqlite3 database."""
 
 import sqlite3
-from os import name as os_name
 
 from flask import Flask
 from flask import g
@@ -13,7 +12,7 @@ from flask import render_template
 try:
     from flup.server.fcgi import WSGIServer
 except ImportError:
-    WSGIServer = None
+    WSGIServer = False
 
 
 CLEANUP_TALBE = ''.maketrans({
@@ -64,7 +63,7 @@ def input_cleanup(text):
     return text.translate(CLEANUP_TALBE).replace('ە', 'ه\u200c')
 
 
-@app.route('/results' if os_name == 'posix' else '/farhangestan/results')
+@app.route('/results' if WSGIServer else '/farhangestan/results')
 def searchresult():
     get_arg = request.args.get
     daftar = get_arg('daftar', '')
@@ -83,7 +82,7 @@ def searchresult():
         + (offset,)
     )
     return render_template(
-        'results.html', os_name=os_name, word=word, wordend=wordend,
+        'results.html', wsgiserver=WSGIServer, word=word, wordend=wordend,
         wordstart=wordstart, hozeh=hozeh, daftar=daftar, rows=rows,
     )
 
