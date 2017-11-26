@@ -5,52 +5,49 @@
 import sqlite3
 from os import name as os_name
 
-if os_name == 'posix':
-    from flup.server.fcgi import WSGIServer
 from flask import Flask
 from flask import g
 from flask import request
 from flask import redirect, url_for
 from flask import render_template
+if os_name == 'posix':
+    from flup.server.fcgi import WSGIServer
 
 
+CLEANUP_TALBE = ''.maketrans({
+    'ك': 'ک',
+    'ڪ': 'ک',
+    'ﻙ': 'ک',
+    'ﻚ': 'ک',
+    'ي': 'ی',
+    'ى': 'ی',
+    'ے': 'ی',
+    'ۍ': 'ی',
+    'ې': 'ی',
+    'ہ': 'ه',
+    'ھ': 'ه',
+})
 app = Flask(__name__)
-
 
 @app.route('/')
 def searchform():
     return redirect(url_for('static', filename='searchform.html'))
 
 
-def input_cleanup(text):
+def input_cleanup(text: str):
     """Replace all semi-Persian characters with standard Persian characters.
 
     Some of the substations are copied from:
     fa.wikipedia: Mediawiki:Gadget-Extra-Editbuttons-persiantools.js
 
     """
-    text = (
-        text.
-        replace('ك', 'ک').
-        replace('ڪ', 'ک').
-        replace('ﻙ', 'ک').
-        replace('ﻚ', 'ک').
-        replace('ي', 'ی').
-        replace('ى', 'ی').
-        replace('ے', 'ی').
-        replace('ۍ', 'ی').
-        replace('ې', 'ی').
-        replace('ہ', 'ه').
-        replace('ە', 'ه\u200c').
-        replace('ھ', 'ه')
-    )
-    return text
+    return text.translate(CLEANUP_TALBE).replace('ە', 'ه\u200c')
 
 
 @app.route('/results' if os_name == 'posix' else '/farhangestan/results')
 def searchresult():
-    args = request.args
-    daftar = args.get('daftar', '')
+    get_arg = request.args.get
+    daftar = get_arg('daftar', '')
     query = (
         "SELECT mosavab, biganeh, hozeh, tarif, daftar FROM words WHERE "
         "(mosavab LIKE ? OR "
@@ -69,12 +66,12 @@ def searchresult():
         "daftar LIKE ?"
         " LIMIT 50 OFFSET ?;"
     )
-    word = input_cleanup(args.get('word', ''))
-    wordstart = input_cleanup(args.get('wordstart', ''))
-    wordend = input_cleanup(args.get('wordend', ''))
-    hozeh = input_cleanup(args.get('hozeh', ''))
+    word = input_cleanup(get_arg('word', ''))
+    wordstart = input_cleanup(get_arg('wordstart', ''))
+    wordend = input_cleanup(get_arg('wordend', ''))
+    hozeh = input_cleanup(get_arg('hozeh', ''))
     daftar = int(daftar) if daftar.isnumeric() else ''
-    offset = int(args.get('offset', 0))
+    offset = int(get_arg('offset', 0))
     rows = query_db(
         query,
         ('%{}%'.format(word),) * 4 + ('{}%'.format(wordstart),) * 2 +
