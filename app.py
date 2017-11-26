@@ -51,7 +51,7 @@ def searchform():
     return redirect(url_for('static', filename='searchform.html'))
 
 
-def input_cleanup(text: str):
+def input_cleanup(text):
     """Replace all semi-Persian characters with standard Persian characters.
 
     Some of the substations are copied from:
@@ -73,11 +73,11 @@ def searchresult():
     offset = int(get_arg('offset', 0))
     rows = query_db(
         QUERY,
-        (f'%{word}%',) * 4
-        + (f'{wordstart}%',) * 2
-        + (f'%{wordend}',) * 2
-        + (f'%{hozeh}%',)
-        + (f'%{daftar}%',)
+        ('%' + word + '%',) * 4
+        + (wordstart + '%',) * 2
+        + ('%' + wordend,) * 2
+        + ('%' + hozeh + '%',)
+        + ('%' + daftar + '%',)
         + (offset,),
     )
     return render_template(
