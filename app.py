@@ -86,15 +86,10 @@ def searchresult():
     )
 
 
-def connect_to_db():
-    """Connects to the specific database."""
-    return sqlite3.connect('farhangestan.sqlite3')
-
-
 def get_db():
     db = getattr(g, 'db', None)
     if db is None:
-        db = g.db = connect_to_db()
+        db = g.db = sqlite3.connect('farhangestan.sqlite3')
     return db
 
 
