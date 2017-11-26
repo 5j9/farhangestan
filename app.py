@@ -10,8 +10,10 @@ from flask import g
 from flask import request
 from flask import redirect, url_for
 from flask import render_template
-if os_name == 'posix':
+try:
     from flup.server.fcgi import WSGIServer
+except ImportError:
+    WSGIServer = None
 
 
 CLEANUP_TALBE = ''.maketrans({
@@ -105,7 +107,7 @@ def query_db(args):
 
 
 if __name__ == '__main__':
-    if os_name == 'posix':
+    if WSGIServer:
         WSGIServer(app).run()
     else:
         app.run(debug=True)
