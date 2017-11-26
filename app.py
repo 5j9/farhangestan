@@ -28,6 +28,23 @@ CLEANUP_TALBE = ''.maketrans({
     'ھ': 'ه',
 })
 app = Flask(__name__)
+QUERY = """
+    SELECT mosavab, biganeh, hozeh, tarif, daftar
+    FROM words
+    WHERE (
+        mosavab LIKE ?
+        OR biganeh LIKE ?
+        OR tarif LIKE ?
+        OR pure_mosavab LIKE ?
+    ) AND (
+        mosavab LIKE ?
+        OR biganeh LIKE ?
+    ) AND (
+        mosavab LIKE ? OR
+        biganeh LIKE ?
+    ) AND hozeh LIKE ? AND daftar LIKE ?
+    LIMIT 50 OFFSET ?;
+"""
 
 @app.route('/')
 def searchform():
@@ -48,24 +65,6 @@ def input_cleanup(text: str):
 def searchresult():
     get_arg = request.args.get
     daftar = get_arg('daftar', '')
-    query = (
-        "SELECT mosavab, biganeh, hozeh, tarif, daftar FROM words WHERE "
-        "(mosavab LIKE ? OR "
-        "biganeh LIKE ? OR "
-        "tarif LIKE ? OR "
-        "pure_mosavab LIKE ?)"
-        " AND "
-        "(mosavab LIKE ? OR "
-        "biganeh LIKE ?)"
-        " AND "
-        "(mosavab LIKE ? OR "
-        "biganeh LIKE ?)"
-        " AND "
-        "hozeh LIKE ?"
-        " AND "
-        "daftar LIKE ?"
-        " LIMIT 50 OFFSET ?;"
-    )
     word = input_cleanup(get_arg('word', ''))
     wordstart = input_cleanup(get_arg('wordstart', ''))
     wordend = input_cleanup(get_arg('wordend', ''))
@@ -73,10 +72,13 @@ def searchresult():
     daftar = int(daftar) if daftar.isnumeric() else ''
     offset = int(get_arg('offset', 0))
     rows = query_db(
-        query,
-        ('%{}%'.format(word),) * 4 + ('{}%'.format(wordstart),) * 2 +
-        ('%{}'.format(wordend),) * 2 + ('%{}%'.format(hozeh),) +
-        ('%{}%'.format(daftar),) + (offset,),
+        QUERY,
+        (f'%{word}%',) * 4
+        + (f'{wordstart}%',) * 2
+        + (f'%{wordend}',) * 2
+        + (f'%{hozeh}%',)
+        + (f'%{daftar}%',)
+        + (offset,),
     )
     return render_template(
         'results.html', os_name=os_name, word=word, wordend=wordend,
