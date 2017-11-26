@@ -208,6 +208,8 @@ def scrap_and_store():
             rows = extract_data(soup, daftar)
             insert(rows, conn)
 
+    conn.execute('vacuum;')
+    conn.commit()
     conn.close()
     print('farhangestan.sqlite3 is ready!')
 
