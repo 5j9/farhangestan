@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """Scrap the Persian Academy website to create a local sqlite3 database.
 
@@ -212,5 +213,5 @@ def scrap_and_store():
 
 
 if __name__ == '__main__':
-    # scrap_and_store()
-    trim_table_values(' ')
+    scrap_and_store()
+    # trim_table_values(' ')
