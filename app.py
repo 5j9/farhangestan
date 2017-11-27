@@ -15,7 +15,7 @@ except ImportError:
     WSGIServer = False
 
 
-APP = Flask(__name__)
+app = Flask(__name__)
 
 CLEANUP_TALBE = ''.maketrans({
     'ك': 'ک',
@@ -32,7 +32,7 @@ CLEANUP_TALBE = ''.maketrans({
 })
 
 
-@APP.route('/')
+@app.route('/')
 def searchform():
     return redirect(url_for('static', filename='searchform.html'))
 
@@ -47,7 +47,7 @@ def input_cleanup(text):
     return text.translate(CLEANUP_TALBE).replace('ە', 'ه\u200c')
 
 
-@APP.route('/results' if WSGIServer else '/farhangestan/results')
+@app.route('/results' if WSGIServer else '/farhangestan/results')
 def searchresult():
     get_arg = request.args.get
     daftar = get_arg('daftar', '')
@@ -71,7 +71,7 @@ def get_db():
     return db
 
 
-@APP.teardown_appcontext
+@app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, 'db', None)
     if db is not None:
@@ -132,6 +132,6 @@ def query_db(word, wordstart, wordend, hozeh, daftar, offset):
 
 if __name__ == '__main__':
     if WSGIServer:
-        WSGIServer(APP).run()
+        WSGIServer(app).run()
     else:
-        APP.run(debug=True)
+        app.run(debug=True)
