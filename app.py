@@ -5,7 +5,6 @@
 import sqlite3
 
 from flask import Flask
-from flask import g
 from flask import request
 from flask import redirect, url_for
 from flask import render_template
@@ -16,6 +15,7 @@ except ImportError:
 
 
 app = Flask(__name__)
+conn = None
 
 CLEANUP_TALBE = ''.maketrans({
     'ك': 'ک',
@@ -64,21 +64,8 @@ def searchresult():
     )
 
 
-def get_db():
-    db = getattr(g, 'db', None)
-    if db is None:
-        db = g.db = sqlite3.connect('farhangestan.sqlite3')
-    return db
-
-
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
-
-
 def query_db(word, wordstart, wordend, hozeh, daftar, offset):
+    global conn
     query = """
         SELECT mosavab, biganeh, hozeh, tarif, daftar
         FROM words
@@ -127,7 +114,11 @@ def query_db(word, wordstart, wordend, hozeh, daftar, offset):
     if offset:
         query += 'OFFSET ? '
         args += (offset,)
-    return get_db().execute(query, args).fetchall()
+    conn = conn or sqlite3.connect(
+        'farhangestan.sqlite3',
+        check_same_thread=False,  # since we don't have any writing operations
+    )
+    return conn.execute(query, args).fetchall()
 
 
 if __name__ == '__main__':
