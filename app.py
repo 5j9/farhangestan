@@ -85,7 +85,7 @@ def searchresult():
         + (wordstart + '%',) * 2
         + ('%' + wordend,) * 2
         + ('%' + hozeh + '%',)
-        + ('%' + daftar + '%',)
+        + (daftar,)
         + (offset,)
     ))
     return render_template(
