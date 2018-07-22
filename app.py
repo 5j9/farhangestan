@@ -31,6 +31,24 @@ CLEANUP_TALBE = ''.maketrans({
     'ھ': 'ه',
 })
 
+QUERY = """
+    SELECT mosavab, biganeh, hozeh, tarif, daftar
+    FROM words
+    WHERE (
+        mosavab LIKE ?
+        OR biganeh LIKE ?
+        OR tarif LIKE ?
+        OR pure_mosavab LIKE ?
+    ) AND (
+        mosavab LIKE ?
+        OR biganeh LIKE ?
+    ) AND (
+        mosavab LIKE ? OR
+        biganeh LIKE ?
+    ) AND hozeh LIKE ? AND daftar LIKE ?
+    LIMIT 50 OFFSET ?;
+"""
+
 
 @app.route('/')
 def searchform():
@@ -51,74 +69,38 @@ def input_cleanup(text):
 def searchresult():
     get_arg = request.args.get
     daftar = get_arg('daftar', '')
+    if daftar.isnumeric():
+        daftar_int = int(daftar)
+        daftar = str(daftar_int)
+    else:
+        daftar_int = 0
+        daftar = ''
     word = input_cleanup(get_arg('word', ''))
     wordstart = input_cleanup(get_arg('wordstart', ''))
     wordend = input_cleanup(get_arg('wordend', ''))
     hozeh = input_cleanup(get_arg('hozeh', ''))
-    daftar = int(daftar) if daftar.isnumeric() else None
     offset = int(get_arg('offset', 0))
-    rows = query_db(word, wordstart, wordend, hozeh, daftar, offset)
+    rows = query_db((
+        ('%' + word + '%',) * 4
+        + (wordstart + '%',) * 2
+        + ('%' + wordend,) * 2
+        + ('%' + hozeh + '%',)
+        + ('%' + daftar + '%',)
+        + (offset,)
+    ))
     return render_template(
         'results.html', wsgiserver=WSGIServer, word=word, wordend=wordend,
-        wordstart=wordstart, hozeh=hozeh, daftar=daftar, rows=rows,
+        wordstart=wordstart, hozeh=hozeh, daftar=daftar_int, rows=rows,
     )
 
 
-def query_db(word, wordstart, wordend, hozeh, daftar, offset):
+def query_db(args):
     global conn
-    query = """
-        SELECT mosavab, biganeh, hozeh, tarif, daftar
-        FROM words
-        WHERE
-    """
-    args = []
-    in_where = False
-    if word:
-        query += '''(
-            mosavab LIKE ?
-            OR biganeh LIKE ?
-            OR tarif LIKE ?
-            OR pure_mosavab LIKE ?
-        ) '''
-        in_where = True
-        args += ('%' + word + '%',) * 4
-    if wordstart:
-        if in_where:
-            query += 'AND '
-        else:
-            in_where = True
-        query += '(mosavab LIKE ? OR biganeh LIKE ?) '
-        args += (wordstart + '%',) * 2
-    if wordend:
-        if in_where:
-            query += 'AND '
-        else:
-            in_where = True
-        query += '(mosavab LIKE ? OR biganeh LIKE ?) '
-        args += ('%' + wordend,) * 2
-    if hozeh:
-        if in_where:
-            query += 'AND '
-        else:
-            in_where = True
-        query += 'hozeh LIKE ? '
-        args += ('%' + hozeh + '%',)
-    if daftar:
-        if in_where:
-            query += 'AND '
-        # else:
-        #     in_where = True
-        query += 'daftar LIKE ? '
-        args += (daftar,)
-    query += 'LIMIT 50 '
-    if offset:
-        query += 'OFFSET ? '
-        args += (offset,)
     conn = conn or sqlite3.connect(
         'farhangestan.sqlite3',
         check_same_thread=False,  # since we don't have any writing operations
     )
-    return conn.execute(query, args).fetchall()
+    return conn.execute(QUERY, args).fetchall()
 
 
 if __name__ == '__main__':
