@@ -71,6 +71,7 @@ def get_conn():
             daftar INTEGER,
             pure_mosavab TEXT
             )
+            CREATE INDEX daftar_index on words (daftar ASC)
             '''
         )
     except sqlite3.OperationalError:
