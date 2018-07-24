@@ -45,7 +45,7 @@ QUERY = """
     ) AND (
         mosavab LIKE ? OR
         biganeh LIKE ?
-    ) AND hozeh LIKE ? AND daftar LIKE ?
+    ) AND hozeh LIKE ? AND daftar = ?
     LIMIT 50 OFFSET ?;
 """
 
