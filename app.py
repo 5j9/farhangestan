@@ -82,12 +82,10 @@ def query_and_args(daftar, word, wordstart, wordend, hozeh, offset):
     query = """
         SELECT mosavab, biganeh, hozeh, tarif, daftar
         FROM words
-        WHERE
     """
     args = []
-    in_where = False
     if word:
-        query += '''(
+        query += '''WHERE (
             mosavab LIKE ?
             OR biganeh LIKE ?
             OR tarif LIKE ?
@@ -95,10 +93,13 @@ def query_and_args(daftar, word, wordstart, wordend, hozeh, offset):
         ) '''
         in_where = True
         args += ('%' + word + '%',) * 4
+    else:
+        in_where = False
     if wordstart:
         if in_where:
             query += 'AND '
         else:
+            query += 'WHERE '
             in_where = True
         query += '(mosavab LIKE ? OR biganeh LIKE ?) '
         args += (wordstart + '%',) * 2
@@ -106,6 +107,7 @@ def query_and_args(daftar, word, wordstart, wordend, hozeh, offset):
         if in_where:
             query += 'AND '
         else:
+            query += 'WHERE '
             in_where = True
         query += '(mosavab LIKE ? OR biganeh LIKE ?) '
         args += ('%' + wordend,) * 2
@@ -113,14 +115,15 @@ def query_and_args(daftar, word, wordstart, wordend, hozeh, offset):
         if in_where:
             query += 'AND '
         else:
+            query += 'WHERE '
             in_where = True
         query += 'hozeh LIKE ? '
         args += ('%' + hozeh + '%',)
     if daftar:
         if in_where:
             query += 'AND '
-        # else:
-        #     in_where = True
+        else:
+            query += 'WHERE '
         query += 'daftar = ? '
         args += (daftar,)
     query += 'LIMIT 50 '
