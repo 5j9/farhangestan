@@ -3,9 +3,8 @@ from subprocess import check_call, check_output
 from pathlib import Path
 from os import chdir
 
-home = Path.home()
 try:
-    (home / 'uwsgi.log').unlink()
+    Path('/data/project/farhangestan/uwsgi.log').unlink()
 except FileNotFoundError:
     pass
 chdir(b'/data/project/farhangestan/www/python/src')
@@ -17,7 +16,7 @@ check_output(
     + b' -- '
       b'bash -c "'
       b'. ~/www/python/venv/bin/activate '
-      b'&& pip install -Ur requirements.txt'
+      b'&& pip install -Ur ~/www/python/src/requirements.txt'
       b'"',
     shell=True
 )
