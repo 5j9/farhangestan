@@ -8,10 +8,6 @@ from flask import Flask
 from flask import request
 from flask import redirect, url_for
 from flask import render_template
-try:
-    from flup.server.fcgi import WSGIServer
-except ImportError:
-    WSGIServer = False
 
 
 app = Flask(__name__)
@@ -47,7 +43,7 @@ def input_cleanup(text):
     return text.translate(CLEANUP_TALBE).replace('ە', 'ه\u200c')
 
 
-@app.route('/results' if WSGIServer else '/farhangestan/results')
+@app.route('/results')
 def searchresult():
     get_arg = request.args.get
     daftar = get_arg('daftar', '')
@@ -64,7 +60,7 @@ def searchresult():
     offset = int(get_arg('offset', 0))
     rows = query_db(daftar, word, wordstart, wordend, hozeh, offset)
     return render_template(
-        'results.html', wsgiserver=WSGIServer, word=word, wordend=wordend,
+        'results.html', word=word, wordend=wordend,
         wordstart=wordstart, hozeh=hozeh, daftar=daftar_int, rows=rows,
     )
 
@@ -131,10 +127,3 @@ def query_and_args(daftar, word, wordstart, wordend, hozeh, offset):
         query += 'OFFSET ? '
         args += (offset,)
     return query, args
-
-
-if __name__ == '__main__':
-    if WSGIServer:
-        WSGIServer(app).run()
-    else:
-        app.run(debug=True)
