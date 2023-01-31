@@ -68,7 +68,7 @@ def searchresult():
 def query_db(*args):
     global conn
     conn = conn or sqlite3.connect(
-        'farhangestan.sqlite3',
+        'persianacademy.ir/farhangestan.sqlite3',
         check_same_thread=False,  # since we don't have any writing operations
     )
     return conn.execute(*query_and_args(*args)).fetchall()
