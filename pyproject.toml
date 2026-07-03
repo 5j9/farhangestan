@@ -49,3 +49,12 @@ reportUnnecessaryIsInstance = 'warning'
 reportUnnecessaryTypeIgnoreComment = 'warning'
 venvPath = "."
 venv = ".venv"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "farhangestan"
+
+[dependency-groups]
+dev = [
+    "requests>=2.34.2",
+]

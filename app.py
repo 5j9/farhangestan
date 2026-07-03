@@ -4,28 +4,26 @@
 
 import sqlite3
 
-from flask import Flask
-from flask import request
-from flask import redirect, url_for
-from flask import render_template
-
+from flask import Flask, redirect, render_template, request, url_for
 
 app = Flask(__name__)
 conn = None
 
-CLEANUP_TALBE = ''.maketrans({
-    'ك': 'ک',
-    'ڪ': 'ک',
-    'ﻙ': 'ک',
-    'ﻚ': 'ک',
-    'ي': 'ی',
-    'ى': 'ی',
-    'ے': 'ی',
-    'ۍ': 'ی',
-    'ې': 'ی',
-    'ہ': 'ه',
-    'ھ': 'ه',
-})
+CLEANUP_TALBE = ''.maketrans(
+    {
+        'ك': 'ک',
+        'ڪ': 'ک',
+        'ﻙ': 'ک',
+        'ﻚ': 'ک',
+        'ي': 'ی',
+        'ى': 'ی',
+        'ے': 'ی',
+        'ۍ': 'ی',
+        'ې': 'ی',
+        'ہ': 'ه',
+        'ھ': 'ه',
+    }
+)
 
 
 @app.route('/')
@@ -60,8 +58,13 @@ def searchresult():
     offset = int(get_arg('offset', 0))
     rows = query_db(daftar, word, wordstart, wordend, hozeh, offset)
     return render_template(
-        'results.html', word=word, wordend=wordend,
-        wordstart=wordstart, hozeh=hozeh, daftar=daftar_int, rows=rows,
+        'results.html',
+        word=word,
+        wordend=wordend,
+        wordstart=wordstart,
+        hozeh=hozeh,
+        daftar=daftar_int,
+        rows=rows,
     )
 
 
@@ -81,12 +84,12 @@ def query_and_args(daftar, word, wordstart, wordend, hozeh, offset):
     """
     args = []
     if word:
-        query += '''WHERE (
+        query += """WHERE (
             mosavab LIKE ?
             OR biganeh LIKE ?
             OR tarif LIKE ?
             OR pure_mosavab LIKE ?
-        ) '''
+        ) """
         in_where = True
         args += ('%' + word + '%',) * 4
     else:

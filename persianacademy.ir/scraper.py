@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """Scrap the Persian Academy website to create a local sqlite3 database.
 
@@ -8,29 +7,26 @@ Save the sqllite3 database as `farhangestan.sqlite3`.
 
 """
 
-
-import sqlite3
 import re
+import sqlite3
 
 import requests
 from bs4 import BeautifulSoup
 
-
 DIACRITICS_TT = str.maketrans(
-    '', '', '\u0651\u064E\u0650\u064F\u064B\u064D\u064C\u0652'
+    '', '', '\u0651\u064e\u0650\u064f\u064b\u064d\u064c\u0652'
 )
-GENERAL_TT = str.maketrans('\u200F', '\u200C')
+GENERAL_TT = str.maketrans('\u200f', '\u200c')
 
 
 def cleanup_tds(tds):
     """Replace some of the known bad characters with better equivalents."""
     for i, d in enumerate(tds):
         tds[i] = (
-            d.text.
-            replace('ۀ', 'هٔ').
-            replace('\u064B\u064B', '\u064B').
-            translate(GENERAL_TT).
-            strip()
+            d.text.replace('ۀ', 'هٔ')
+            .replace('\u064b\u064b', '\u064b')
+            .translate(GENERAL_TT)
+            .strip()
         )
     return tds
 
@@ -62,7 +58,7 @@ def get_conn():
     conn = sqlite3.connect('farhangestan.sqlite3')
     try:
         conn.execute(
-            '''
+            """
             CREATE TABLE words (
             mosavab TEXT,
             biganeh TEXT,
@@ -72,7 +68,7 @@ def get_conn():
             pure_mosavab TEXT
             )
             CREATE INDEX daftar_index on words (daftar ASC)
-            '''
+            """
         )
     except sqlite3.OperationalError:
         # table words already exists
@@ -95,17 +91,17 @@ def insert(rows, conn):
                 )
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            rows
+            rows,
         )
 
 
 def trim_table_values(chars: str):
     conn = get_conn()
     for col in ('mosavab', 'biganeh', 'hozeh', 'tarif', 'daftar'):
-        sql = """
+        sql = f"""
         UPDATE words
         SET {col} = trim({col}, '{chars}');
-        """.format(col=col, chars=chars)
+        """
         conn.execute(sql)
         conn.commit()
 
@@ -117,11 +113,11 @@ def replace_in_table(conn, old: str, new: str):
 
     """
     for col in ('mosavab', 'biganeh', 'hozeh', 'tarif', 'daftar'):
-        sql = """
+        sql = f"""
         UPDATE words
         SET {col} = replace({col}, '{old}', '{new}')
         WHERE {col} LIKE '%{old}%';
-        """.format(old=old, new=new, col=col)
+        """
         conn.execute(sql)
         conn.commit()
 
@@ -155,12 +151,12 @@ def scrap_and_store():
         print('Book:', daftar, 'Page:', page)
         soup = BeautifulSoup(
             session.get(url, headers=headers).text,
-            "html5lib",
+            'html5lib',
         )
 
         data = {
-            '__VIEWSTATE': soup.find(id="__VIEWSTATE")['value'],
-            '__EVENTVALIDATION': soup.find(id="__EVENTVALIDATION")['value'],
+            '__VIEWSTATE': soup.find(id='__VIEWSTATE')['value'],
+            '__EVENTVALIDATION': soup.find(id='__EVENTVALIDATION')['value'],
             'ctl00$MainSection$hidAll': '',
             'ctl00$MainSection$hidWhichButton': '',
             'ctl00$MainSection$txtFaWord': '',
@@ -173,12 +169,12 @@ def scrap_and_store():
 
         soup = BeautifulSoup(
             session.post(url, data, headers=headers).text,
-            "html5lib",
+            'html5lib',
         )
         try:
             rows = extract_data(soup, daftar)
         except TypeError:
-            print('Book {} has no words.'.format(daftar))
+            print(f'Book {daftar} has no words.')
             break
         insert(rows, conn)
 
@@ -190,21 +186,21 @@ def scrap_and_store():
             pagelink = soup.find(colspan=4).find(text=page)
             if pagelink:
                 data['__EVENTTARGET'] = re.search(
-                    r"\(\'(.*?)\'", str(pagelink.parent)
+                    r'\(\'(.*?)\'', str(pagelink.parent)
                 ).group(1)
             elif soup.find(colspan=4).text.endswith('...'):
                 data['__EVENTTARGET'] = re.search(
-                    r"\(\'(.*?)\'", str(soup.find(colspan=4)('a')[-1])
+                    r'\(\'(.*?)\'', str(soup.find(colspan=4)('a')[-1])
                 ).group(1)
             else:
                 break
-            data['__EVENTVALIDATION'] = soup.find(
-                id="__EVENTVALIDATION"
-            )['value']
-            data['__VIEWSTATE'] = soup.find(id="__VIEWSTATE")['value']
+            data['__EVENTVALIDATION'] = soup.find(id='__EVENTVALIDATION')[
+                'value'
+            ]
+            data['__VIEWSTATE'] = soup.find(id='__VIEWSTATE')['value']
             soup = BeautifulSoup(
                 session.post(url, data, headers=headers).text,
-                "html5lib",
+                'html5lib',
             )
             rows = extract_data(soup, daftar)
             insert(rows, conn)
